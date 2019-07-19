@@ -1,2 +1,2 @@
-# Freq_N_words
+# freqNwords
 Frequencies of N-words in Google N-Gram lexicon

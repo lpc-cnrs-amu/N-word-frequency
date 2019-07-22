@@ -1,2 +1,4 @@
 .DS_Store
-results/
+freqNword/
+ignored_items/
+raw_data/

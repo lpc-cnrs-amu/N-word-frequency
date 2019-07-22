@@ -5,6 +5,7 @@ Created on Wed Jul 17 11:02:56 2019
 @author: Marjorie
 """
 
+import os
 import io
 import time
 import sys
@@ -56,8 +57,8 @@ def write_final_files(threadName, q, session, tags_regex=r'(_NOUN|_VERB|_ADJ|_AD
             else:
                 filename = url.replace('http://storage.googleapis.com/books/ngrams/books/googlebooks-', '')
                 filename = filename.replace('.gz', '')
-                filename_correct = filename + '_correct.csv'
-                filename_incorrect = filename + '_incorrect.csv'                
+                filename_correct = os.path.join('results', 'freqNword', filename + '.csv')
+                filename_incorrect = os.path.join('results', 'ignored_items', filename + '_ignored.csv')               
                 
                 with open(filename_correct, 'w', encoding="utf-8-sig", newline='') as \
                 output_ok, open(filename_incorrect, 'w', encoding="utf-8-sig", newline='') as \
@@ -271,8 +272,8 @@ def write_raw_files(list_url, tags_regex, nb_ngrams, chunk_size=1024 ** 2):
         else:
             filename = url.replace('http://storage.googleapis.com/books/ngrams/books/googlebooks-', '')
             filename = filename.replace('.gz', '')
-            filename_correct = filename + '_correct.raw.csv'
-            filename_incorrect = filename + '_incorrect.raw.csv'                
+            filename_correct = os.path.join('results', 'raw_data', 'freqNword', filename + '.raw.csv')
+            filename_incorrect = os.path.join('results', 'raw_data', 'ignored_items', filename + '_ignored.raw.csv')               
             
             with open(filename_correct, 'w', encoding="utf-8-sig", newline='') as \
             output_ok, open(filename_incorrect, 'w', encoding="utf-8-sig", newline='') as \
@@ -489,6 +490,24 @@ year = list(sys.argv[4])
 indexes = list(sys.argv[5])
 """
 
+#create explicitly "results" directory structure if not exist
+if not os.path.exists(os.path.join('results')):
+    os.makedirs(os.path.join('results'))
+    
+if not os.path.exists(os.path.join('results', 'freqNword')):
+    os.makedirs(os.path.join('results', 'freqNword'))
+    
+if not os.path.exists(os.path.join('results', 'ignored_items')):
+    os.makedirs(os.path.join('results', 'ignored_items'))
+    
+if not os.path.exists(os.path.join('results', 'raw_data', 'freqNword')):    
+    os.makedirs(os.path.join('results', 'raw_data', 'freqNword'))
+    
+if not os.path.exists(os.path.join('results', 'raw_data', 'ignored_items')):
+    os.makedirs(os.path.join('results', 'raw_data', 'ignored_items'))
+
+    
+    
 
 langage = 'fre'
 nb_ngram = '4'

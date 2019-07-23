@@ -22,9 +22,8 @@ class StreamInterruptionError(Exception):
     def __init__(self, message):
         self.message = message     
 
-        
          
-def write_final_files(url, session, tags_regex=r'(_NOUN|_VERB|_ADJ|_ADV|_PRON|_DET|_ADP|_NUM|_CONJ|_PRT)',\
+def write_final_files(url, session, header, tags_regex=r'(_NOUN|_VERB|_ADJ|_ADV|_PRON|_DET|_ADP|_NUM|_CONJ|_PRT)',\
                       nb_ngrams=4, chunk_size=1024 ** 2):        
     request = session.get(url, stream=True)
     print("%s - url: %s" % (threading.current_thread().name, url))
@@ -47,15 +46,6 @@ def write_final_files(url, session, tags_regex=r'(_NOUN|_VERB|_ADJ|_ADV|_PRON|_D
             incorrect_writer = csv.writer(output_incorrect, delimiter=';', \
                                           quotechar='"', quoting=csv.QUOTE_MINIMAL)
             
-            header = ['gram 1', 'tag 1', 'gram 2', 'tag 2', \
-                      'gram 3', 'tag 3', 'gram 4', 'tag 4', \
-                      'nb year', 'somme match count', \
-                      'somme volume count', \
-                      'mean_pondere_count_match', 'mean_pondere_volume_match', \
-                      'year max', 'year min',\
-                      'match count max', 'match count min',\
-                      'volume match max', 'volume match min',\
-                      'number of tags']
             ok_writer.writerow(header)
             incorrect_writer.writerow(header)                
             
@@ -117,10 +107,10 @@ def write_final_files(url, session, tags_regex=r'(_NOUN|_VERB|_ADJ|_ADV|_PRON|_D
                                 words_tags = word.split('_')
                                 #si on en a 2 alors le mot est taggé
                                 if len(words_tags) == 2:
-                                    row.extend([words_tags[0].lower(), words_tags[1]])
+                                    row.extend([words_tags[0], words_tags[1]])
                                 #sinon il ne l'est pas
                                 else:
-                                    row.extend([word.lower(), ''])
+                                    row.extend([word, ''])
                                     print_correct = False                                
                             
                             row.extend([somme_year, somme_count_match,\
@@ -208,10 +198,10 @@ def write_final_files(url, session, tags_regex=r'(_NOUN|_VERB|_ADJ|_ADV|_PRON|_D
                     words_tags = word.split('_')
                     #si on en a 2 alors le mot est taggé
                     if len(words_tags) == 2:
-                        row.extend([words_tags[0].lower(), words_tags[1]])
+                        row.extend([words_tags[0], words_tags[1]])
                     #sinon il ne l'est pas
                     else:
-                        row.extend([word.lower(), ''])
+                        row.extend([word, ''])
                         print_correct = False                                
                 
                 row.extend([somme_year, somme_count_match,\
@@ -235,7 +225,7 @@ def write_final_files(url, session, tags_regex=r'(_NOUN|_VERB|_ADJ|_ADV|_PRON|_D
         
         
 
-def write_raw_files(url, session, tags_regex=r'(_NOUN|_VERB|_ADJ|_ADV|_PRON|_DET|_ADP|_NUM|_CONJ|_PRT)',\
+def write_raw_files(url, session, header, tags_regex=r'(_NOUN|_VERB|_ADJ|_ADV|_PRON|_DET|_ADP|_NUM|_CONJ|_PRT)',\
                     nb_ngrams=4, chunk_size=1024 ** 2):
     
     request = session.get(url, stream=True)
@@ -259,15 +249,6 @@ def write_raw_files(url, session, tags_regex=r'(_NOUN|_VERB|_ADJ|_ADV|_PRON|_DET
             incorrect_writer = csv.writer(output_incorrect, delimiter=';', \
                                           quotechar='"', quoting=csv.QUOTE_MINIMAL)
             
-            header = ['gram 1', 'tag 1', 'gram 2', 'tag 2', \
-                      'gram 3', 'tag 3', 'gram 4', 'tag 4', \
-                      'year', 'nb year', 'match count', 'somme match count', \
-                      'volume count', 'somme volume count', \
-                      'mean_pondere_count_match', 'mean_pondere_volume_match', \
-                      'year max', 'year min',\
-                      'match count max', 'match count min',\
-                      'volume match max', 'volume match min',\
-                      'number of tags']
             ok_writer.writerow(header)
             incorrect_writer.writerow(header)                
             
@@ -323,10 +304,10 @@ def write_raw_files(url, session, tags_regex=r'(_NOUN|_VERB|_ADJ|_ADV|_PRON|_DET
                             words_tags = word.split('_')
                             #si on en a 2 alors le mot est taggé
                             if len(words_tags) == 2:
-                                row.extend([words_tags[0].lower(), words_tags[1]])
+                                row.extend([words_tags[0], words_tags[1]])
                             #sinon il ne l'est pas
                             else:
-                                row.extend([word.lower(), ''])
+                                row.extend([word, ''])
                                 print_correct = False
                                 
                                 
@@ -403,10 +384,10 @@ def write_raw_files(url, session, tags_regex=r'(_NOUN|_VERB|_ADJ|_ADV|_PRON|_DET
                     words_tags = word.split('_')
                     #si on en a 2 alors le mot est taggé
                     if len(words_tags) == 2:
-                        row.extend([words_tags[0].lower(), words_tags[1]])
+                        row.extend([words_tags[0], words_tags[1]])
                     #sinon il ne l'est pas
                     else:
-                        row.extend([word.lower(), ''])
+                        row.extend([word, ''])
                         print_correct = False
                         
                         
@@ -487,7 +468,7 @@ if not os.path.exists(os.path.join('results', 'raw_data', 'ignored_items')):
     
 
 langage = 'fre'
-nb_ngram = '4'
+nb_ngram = 1
 version = '20120701'
 year = 1970
 indexes = []
@@ -508,7 +489,7 @@ strIndexes = '|'.join(map(str, indexes))
 
 # only with gz file
 regex = r'http://storage\.googleapis\.com/books/ngrams/books/googlebooks-'\
-    +langage+'-all-'+nb_ngram+'gram-'+version+'-('+ strIndexes +')\.gz'
+    +langage+'-all-'+str(nb_ngram)+'gram-'+version+'-('+ strIndexes +')\.gz'
 
 
 # find all corresponding url
@@ -518,27 +499,28 @@ with open("files/google_url.txt") as f:
         if re.search(regex, line):
             list_url.append(line.strip())
 
-#print(list_url)
+print(list_url)
 #print(len(list_url))
 if not list_url:
     print("No URL found")
     sys.exit()
 
+header = []
+for i in range(1, nb_ngram+1):
+    header.extend(['gram '+str(i), 'tag '+str(i)])
+header.extend(['nb year', 'somme match count', \
+               'somme volume count', 'mean_pondere_count_match',\
+               'mean_pondere_volume_match', 'year max', 'year min',\
+               'match count max', 'match count min',\
+               'volume match max', 'volume match min', 'number of tags'])    
 
-tags_regex = r'(_NOUN|_VERB|_ADJ|_ADV|_PRON|_DET|_ADP|_NUM|_CONJ|_PRT)'
 
-"""
-if final_file:
-    write_final_files(list_url, tags_regex, int(nb_ngram))
-else:
-    write_raw_files(list_url, tags_regex, int(nb_ngram))
-"""
 session = requests.Session()
 with futures.ThreadPoolExecutor() as executor:
     if final_file:
-        future_to_url = {executor.submit(write_final_files, url, session): url for url in list_url}
+        future_to_url = {executor.submit(write_final_files, url, session, header, nb_ngrams=nb_ngram): url for url in list_url}
     else:
-        future_to_url = {executor.submit(write_raw_files, url, session): url for url in list_url}
+        future_to_url = {executor.submit(write_raw_files, url, session, header, nb_ngrams=nb_ngram): url for url in list_url}
     for future in futures.as_completed(future_to_url):
         url = future_to_url[future]
         try:
@@ -546,5 +528,3 @@ with futures.ThreadPoolExecutor() as executor:
         except Exception as exc:
             print('%r generated an exception: %s' % (url, exc))
 
-
-#threading.current_thread().name

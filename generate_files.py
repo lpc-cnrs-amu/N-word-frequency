@@ -217,7 +217,7 @@ def write_final_files(url, session, header, tags_regex=r'(_NOUN|_VERB|_ADJ|_ADV|
                     incorrect_writer.writerow(row)
                 else:
                     ok_writer.writerow(row)
-            return "\tfini - "+ threading.current_thread().name
+            return [url, threading.current_thread().name]
         
         
         
@@ -428,7 +428,7 @@ def write_raw_files(url, session, header, tags_regex=r'(_NOUN|_VERB|_ADJ|_ADV|_P
                     incorrect_writer.writerow(row)
                 else:
                     ok_writer.writerow(row)
-            return "\tfini - "+ threading.current_thread().name
+            return [url, threading.current_thread().name]
                         
                         
 
@@ -468,13 +468,14 @@ if not os.path.exists(os.path.join('results', 'raw_data', 'ignored_items')):
     
 
 langage = 'fre'
-nb_ngram = 1
+nb_ngram = 4
 version = '20120701'
 year = 1970
-indexes = []
+indexes = ['zw','ao']
 final_file = True
 
 
+            
 #take all the indexes
 if not indexes or (indexes and 'all' in indexes):
     indexes = []
@@ -492,18 +493,24 @@ regex = r'http://storage\.googleapis\.com/books/ngrams/books/googlebooks-'\
     +langage+'-all-'+str(nb_ngram)+'gram-'+version+'-('+ strIndexes +')\.gz'
 
 
-# find all corresponding url
+# find all corresponding url and write them in a csv file
 list_url = []
-with open("files/google_url.txt") as f:
+with open("files/google_url.txt", 'r') as f, open('files/url_to_read.csv', 'w', \
+         encoding="utf-8-sig", newline='') as url_files:
+    writer = csv.writer(url_files, delimiter=';', quotechar='"', \
+                           quoting=csv.QUOTE_MINIMAL)
+    writer.writerow(['url to read'])
     for line in f:
         if re.search(regex, line):
             list_url.append(line.strip())
-
-print(list_url)
-#print(len(list_url))
+            writer.writerow([line.strip()])
+            
+            
+#print(list_url)
 if not list_url:
     print("No URL found")
     sys.exit()
+
 
 header = []
 for i in range(1, nb_ngram+1):
@@ -516,15 +523,22 @@ header.extend(['nb year', 'somme match count', \
 
 
 session = requests.Session()
-with futures.ThreadPoolExecutor() as executor:
-    if final_file:
-        future_to_url = {executor.submit(write_final_files, url, session, header, nb_ngrams=nb_ngram): url for url in list_url}
-    else:
-        future_to_url = {executor.submit(write_raw_files, url, session, header, nb_ngrams=nb_ngram): url for url in list_url}
-    for future in futures.as_completed(future_to_url):
-        url = future_to_url[future]
-        try:
-            print(future.result())
-        except Exception as exc:
-            print('%r generated an exception: %s' % (url, exc))
-
+lck = threading.Lock()
+with open("files/url_ok.csv", "w", encoding="utf-8-sig", newline='') as f:
+    writer = csv.writer(f, delimiter=';', quotechar='"', \
+                        quoting=csv.QUOTE_MINIMAL)
+    writer.writerow(['url read', 'thread name'])
+    with futures.ThreadPoolExecutor() as executor:
+        if final_file:
+            future_to_url = {executor.submit(write_final_files, url, session, header, nb_ngrams=nb_ngram): url for url in list_url}
+        else:
+            future_to_url = {executor.submit(write_raw_files, url, session, header, nb_ngrams=nb_ngram): url for url in list_url}
+        for future in futures.as_completed(future_to_url):
+            url = future_to_url[future]
+            try:
+                lck.acquire()
+                writer.writerow(future.result())
+                print('finish :', future.result())
+                lck.release()
+            except Exception as exc:
+                print('%r generated an exception: %s' % (url, exc))

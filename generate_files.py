@@ -1,3 +1,4 @@
+#!/usr/bin
 # -*- coding: utf-8 -*-
 """
 Created on Wed Jul 17 11:02:56 2019
@@ -26,6 +27,10 @@ class StreamInterruptionError(Exception):
 def write_final_files(url, session, header, tags_regex=r'(_NOUN|_VERB|_ADJ|_ADV|_PRON|_DET|_ADP|_NUM|_CONJ|_PRT)',\
                       nb_ngrams=4, chunk_size=1024 ** 2):        
     request = session.get(url, stream=True)
+    
+    response = session.head(url)
+    print(response.headers)
+
     print("%s - url: %s" % (threading.current_thread().name, url))
 
     if request.status_code != 200:
@@ -471,7 +476,7 @@ langage = 'fre'
 nb_ngram = 4
 version = '20120701'
 year = 1970
-indexes = ['zw','ao']
+indexes = ['de']
 final_file = True
 
 

@@ -476,7 +476,7 @@ langage = 'fre'
 nb_ngram = 4
 version = '20120701'
 year = 1970
-indexes = ['de']
+indexes = []
 final_file = True
 
 

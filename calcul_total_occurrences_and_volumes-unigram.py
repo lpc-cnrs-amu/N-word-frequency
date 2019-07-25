@@ -76,15 +76,7 @@ def get_total_number_words(url, session, is_version_2012, chunk_size=1024 ** 2):
                         "to temporary networking problems.")
     
             return somme_match_count, somme_volume_count
-                        
-                        
 
-def calcul_frequences(filename, somme_match_count):
-    df = pd.read_csv(filename, sep=';', encoding='utf-8-sig')
-    df['freq match count'] = df['somme match count'] / somme_match_count
-    
-    filename = filename.replace('.csv', '-frequences.csv')
-    df.to_csv(filename, index=False, na_rep='NaN', encoding='utf-8-sig', sep=";")
 
 """
 if len(sys.argv) != :
@@ -158,8 +150,29 @@ if __name__ == '__main__':
         print('\tnb total of words : ', lang_to_somme_match_count[langage])
         print('\tnb total of volume : ', lang_to_somme_volume_count[langage])
     
+    df = pd.DataFrame()
     for filename in filenames:
         print("Doing ", filename)
-        calcul_frequences(directory+filename, somme_match_count)
+        
+        tmp = pd.read_csv(directory+filename, sep=';', encoding='utf-8-sig')
+        tmp['freq match count'] = tmp['somme match count'] / somme_match_count
+        tmp['freq volume count'] = tmp['somme volume count'] / somme_volume_count
+        
+        df = pd.concat([df, tmp])
+
+    df.to_csv(directory+langage+'-all-1gram-'+version+'-frequences.csv',\
+              index=False, na_rep='NaN', encoding='utf-8-sig', sep=";")
+
+
+
+
+
+
+
+
+
+
+
+
 
 

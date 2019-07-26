@@ -155,7 +155,7 @@ strIndexes = '|'.join(map(str, indexes))
 # take all the files we have
 directory = os.getcwd()+'/results/freqNword/4grams/'
 filenames = [f for f in os.listdir(directory) if re.match(r''+langage+'-all-'+\
-             str(nb_ngram)+'gram-'+version+'-('+strIndexes+').csv', f)]
+             str(nb_ngram)+'gram-'+version+'-('+strIndexes+')-frequences-pretreat.csv', f)]
 
 header = []
 for i in range(nb_ngram):

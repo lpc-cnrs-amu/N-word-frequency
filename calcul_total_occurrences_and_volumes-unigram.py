@@ -163,16 +163,3 @@ if __name__ == '__main__':
     df.to_csv(directory+langage+'-all-1gram-'+version+'-frequences.csv',\
               index=False, na_rep='NaN', encoding='utf-8-sig', sep=";")
 
-
-
-
-
-
-
-
-
-
-
-
-
-

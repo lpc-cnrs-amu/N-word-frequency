@@ -8,7 +8,7 @@ Created on Thu Jul 18 10:04:03 2019
 
 id_indexes = []
 
-with open("google_url.txt") as f:
+with open("files/google_url.txt") as f:
     for line in f:
         line = line.strip()
         index = []
@@ -33,6 +33,6 @@ with open("google_url.txt") as f:
 
 
 
-with open('indexes_zip.txt', 'w') as f:
+with open('files/indexes_zip.txt', 'w') as f:
     for elt in id_indexes:
         f.write(elt+"\n")

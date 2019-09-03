@@ -47,9 +47,7 @@ class ThreadOccurrences(threading.Thread):
         self.nb_ngram = nb_ngram
         
     def run(self):
-        print("Start: ", self.name)
         calcul_tags_occurrences(self.name, self.q, self.nb_ngram)
-        print("Exit: ", self.name)
         
  
 def calcul_tags_occurrences(thread_name, q, nb_ngram=4):    
@@ -61,6 +59,7 @@ def calcul_tags_occurrences(thread_name, q, nb_ngram=4):
         queueLock.acquire()
         if not workQueue.empty():
             filename = q.get()
+            print("{} doing: [{}]".format(thread_name, filename))
             queueLock.release()
             with open(filename, "r", encoding="utf-8-sig", newline='') as f:
                 reader = csv.DictReader(f, delimiter=';')
@@ -74,8 +73,8 @@ def calcul_tags_occurrences(thread_name, q, nb_ngram=4):
                     strTags = ' '.join(tags)
                     
                     lck.acquire()
-                    print("{} a le verrou".format(thread_name))
-                    print("tags = ", strTags)
+                    #print("{} a le verrou".format(thread_name))
+                    #print("tags = ", strTags)
                     
                     if strTags in tags_to_occurrences:
                         tags_to_occurrences[strTags] += int(line['somme match count'])
@@ -117,7 +116,8 @@ def calcul_tags_occurrences(thread_name, q, nb_ngram=4):
                         tags_to_volume_match_min[strTags] = int(line['volume match min'])
                         
                     lck.release()
-                    print("{} relache le verrou".format(thread_name))
+                    #print("{} relache le verrou".format(thread_name))
+            print("{} finish: [{}]".format(thread_name, filename))
         else:
             queueLock.release()    
                         
@@ -165,7 +165,7 @@ header.extend(['nb year', 'somme match count', 'somme volume count', 'mean ponde
                'volume match max', 'volume match min'])
 
 thread_list = []
-nb_threads = 10
+nb_threads = 150
 for i in range(nb_threads):
     thread_list.append("Thread-"+str(i))
 
@@ -199,7 +199,7 @@ for t in threads:
    t.join()     
 print("Exiting Main Thread")
 
-with open("files/nb-total-occurences-per-tags-" +langage+ "-" +str(nb_ngram)+"gram-"+version+".csv",\
+with open("files/nb-total-occurences-per-tags-" +langage+ "-" +str(nb_ngram)+"gram-"+version+"-2.csv",\
           "w", encoding="utf-8-sig", newline='') as f:
     writer = csv.writer(f, delimiter=';', quotechar='"', \
                         quoting=csv.QUOTE_MINIMAL)

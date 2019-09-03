@@ -70,14 +70,17 @@ filenames = [f for f in os.listdir(directory) if re.match(r''+langage+'-all-'+\
              nb_ngram+'gram-'+version+'-('+strIndexes+').csv', f)]
 
 
-
-with open("files/nb-total-occurences-" +langage+ "-" +nb_ngram+"gram-"+version+".csv", "w", encoding="utf-8-sig", newline='') as f:
+# write in files/nb-total-occurences-fre-4gram-20120701.csv (for ex) the total number of 
+# words (sum of all the occurrences of all words)
+with open("files/nb-total-occurences-" +langage+ "-" +nb_ngram+"gram-"+version+".csv",
+          "w", encoding="utf-8-sig", newline='') as f:
     writer = csv.writer(f, delimiter=';', quotechar='"', \
                         quoting=csv.QUOTE_MINIMAL)
     writer.writerow(['lang', 'total match count', 'total volume count'])
     with futures.ThreadPoolExecutor() as executor:
         
-        future_to_url = {executor.submit(calculate_nb_total_match_count, directory+filename): filename for filename in filenames}
+        future_to_url = {executor.submit(calculate_nb_total_match_count, directory+filename): \
+                         filename for filename in filenames}
 
         for future in futures.as_completed(future_to_url):
             url = future_to_url[future]

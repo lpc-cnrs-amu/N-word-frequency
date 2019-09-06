@@ -27,9 +27,6 @@ class StreamInterruptionError(Exception):
 def write_final_files(url, session, header, tags_regex=r'(_NOUN|_VERB|_ADJ|_ADV|_PRON|_DET|_ADP|_NUM|_CONJ|_PRT)',\
                       nb_ngrams=4, chunk_size=1024 ** 2):        
     request = session.get(url, stream=True)
-    
-    response = session.head(url)
-    print(response.headers)
 
     print("%s - url: %s" % (threading.current_thread().name, url))
 
@@ -472,7 +469,7 @@ if not os.path.exists(os.path.join('results', 'raw_data', 'ignored_items')):
     
     
 
-langage = 'fre'
+langage = 'eng'
 nb_ngram = 4
 version = '20120701'
 year = 1970
@@ -515,6 +512,8 @@ with open("files/google_url.txt", 'r') as f, open('files/url_to_read.csv', 'w', 
 if not list_url:
     print("No URL found")
     sys.exit()
+    
+print(list_url)
 
 
 header = []

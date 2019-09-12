@@ -234,7 +234,7 @@ if not indexes or (indexes and 'all' in indexes):
 strIndexes = '|'.join(map(str, indexes))
 
 # find all corresponding url and write them in a csv file
-directory = sys.argv[1]  #os.getcwd()+'/results/freqNword/4grams/'
+directory = sys.argv[1]
 filenames = [directory+f for f in os.listdir(directory) if re.match(r'googlebooks-'+langage+'-all-'+\
              str(nb_ngram)+'gram-'+version+'-('+strIndexes+').gz', f)]
     

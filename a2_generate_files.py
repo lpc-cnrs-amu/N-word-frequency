@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 """
 Created on Wed Jul 17 11:02:56 2019
-
 @author: Marjorie
 """
 
@@ -211,7 +210,6 @@ if len(sys.argv) != :
     print("Usage : {} -l lang -n nb_ngram -v version -y [year] -i [index]".format(sys.argv[0]))
     sys.exit
     
-
 langage = sys.argv[1]
 nb_ngram = sys.argv[2]
 version = sys.argv[3]

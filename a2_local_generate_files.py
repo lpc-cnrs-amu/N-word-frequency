@@ -185,7 +185,7 @@ def write_final_files(url, header, list_forbidden_characters=[',','.','?','!','.
                 ok_writer.writerow(row)
                 
         print('[END]: ', url)
-        return [url, threading.current_thread().name]
+        return [url, threading.current_thread().name, 'finish']
 
 
             
@@ -275,7 +275,7 @@ with open("files/url_ok_"+langage+"_all_"+str(nb_ngram)+"gram_"+version+".csv",
           "w", encoding="utf-8-sig", newline='') as f:
     writer = csv.writer(f, delimiter=';', quotechar='"',
                         quoting=csv.QUOTE_MINIMAL)
-    writer.writerow(['url read', 'thread name'])
+    writer.writerow(['url read', 'thread name', 'status'])
     
     with futures.ThreadPoolExecutor() as executor:
         future_to_url = {executor.submit(write_final_files, 
@@ -286,4 +286,5 @@ with open("files/url_ok_"+langage+"_all_"+str(nb_ngram)+"gram_"+version+".csv",
             try:
                 writer.writerow(future.result())
             except Exception as exc:
+                writer.writerow([url, '', exc])
                 print('%r generated an exception: %s' % (url, exc))

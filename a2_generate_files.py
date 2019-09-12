@@ -200,7 +200,7 @@ def write_final_files(url, session, header, list_forbidden_characters=[',','.','
                     ok_writer.writerow(row)
                     
             print('finish :', url)
-            return [url, threading.current_thread().name]
+            return [url, threading.current_thread().name, 'finish']
 
 
             
@@ -293,10 +293,10 @@ header.extend(['nb year', 'somme match count', \
 
 
 session = requests.Session()
-with open("files/url_ok2.csv", "w", encoding="utf-8-sig", newline='') as f:
+with open("files/url_ok.csv", "w", encoding="utf-8-sig", newline='') as f:
     writer = csv.writer(f, delimiter=';', quotechar='"', \
                         quoting=csv.QUOTE_MINIMAL)
-    writer.writerow(['url read', 'thread name'])
+    writer.writerow(['url read', 'thread name', 'state'])
     
     with futures.ThreadPoolExecutor() as executor:
         future_to_url = {executor.submit(write_final_files, 
@@ -307,4 +307,5 @@ with open("files/url_ok2.csv", "w", encoding="utf-8-sig", newline='') as f:
             try:
                 writer.writerow(future.result())
             except Exception as exc:
+                writer.writerow([url, "", exc])
                 print('%r generated an exception: %s' % (url, exc))

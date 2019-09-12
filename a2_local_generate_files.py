@@ -23,9 +23,19 @@ def write_final_files(url, header, list_forbidden_characters=[',','.','?','!','.
                       tags_regex=r'(_NOUN|_VERB|_ADJ|_ADV|_PRON|_DET|_ADP|_NUM|_CONJ|_PRT)',
                       nb_ngrams=4, chunk_size=1024 ** 2):        
 
-    filename = url.split("\\")
+    filename = url.split(os.path.sep)
     if len(filename[-1].split("//")) > 0:
         filename = filename[-1].split("//")
+        
+    elif len(filename[-1].split("\\\\")) > 0:
+        filename = filename[-1].split("\\\\")
+        
+    elif len(filename[-1].split("/")) > 0:
+        filename = filename[-1].split("/")
+
+    elif len(filename[-1].split("\\")) > 0:
+        filename = filename[-1].split("\\")
+        
     filename = filename[-1].replace('googlebooks-', '')
     filename = filename.replace('.gz', '')
     filename_correct = os.path.join('results', 'freqNword', filename + '.csv')               

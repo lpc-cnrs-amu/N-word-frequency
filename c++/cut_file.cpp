@@ -1,14 +1,19 @@
 #include <cstdlib>
 #include <iostream>
 #include <string>
+#include <sstream>
 #include <cstring>
 #include <vector>
 #include <fstream>
 #include <dirent.h>
 #include <algorithm>
 #include <chrono>
+#include <cstdio>
+#include "zlib1211/zlib.h"
 
 #define CUT_SIZE 100000
+//#define CHUNK_SIZE 1048576
+#define CHUNK_SIZE 1024
 #define NB_NGRAM 4
 #define YEAR 1970
 
@@ -16,23 +21,39 @@ using namespace std;
 using namespace std::chrono;
 
 void print_filenames(vector<char*>& filenames);
+bool has_suffix(const char* name, string &suffix);
 void collect_filenames(vector<char*>& filenames);
+
+
 void cut_large_file_into_smaller_files(char* large_filename, 
 	vector<string>& forbidden_characters, vector<string>& accepted_tags);
 void collect_words_tags(string line, vector<string>& words_tags);
-bool valid_words_tags(string line, vector<string>& forbidden_characters,
-	vector<string>& accepted_tags);
+FILE* get_file(char* large_filename, unsigned long long num_cut_files);
+void print_error(string message, char* cut_filename);
+void cut_large_file_into_smaller_files(char* large_filename, 
+	vector<string>& forbidden_characters, vector<string>& accepted_tags);
+bool valid_word_tag(string word_tag, 
+	vector<string>& forbidden_characters, vector<string>& accepted_tags);	
 bool valid_line(string line, string& words_tags, unsigned& year, 
 	unsigned& nb_match, unsigned& nb_volume, 
 	vector<string>& forbidden_characters, vector<string>& accepted_tags);
-void cut_large_file_into_smaller_files_handler(vector<char*>& filenames);
 void destroy_filenames(vector<char*>& filenames);
-
-
+void cut_large_file_into_smaller_files_handler(vector<char*>& filenames,
+	vector<string>& forbidden_characters, vector<string>& accepted_tags);
+void collect_words_tags(string line, vector<string>& words_tags);
+	
+	
 void print_filenames(vector<char*>& filenames)
 {
 	for(unsigned i=0; i<filenames.size(); ++i)
 		cout << filenames[i] << endl;
+}
+
+bool has_suffix(const char* name, string &suffix)
+{
+	string str = name;
+    return str.size() >= suffix.size() &&
+           str.compare(str.size() - suffix.size(), suffix.size(), suffix) == 0;
 }
 
 void collect_filenames(vector<char*>& filenames)
@@ -41,6 +62,7 @@ void collect_filenames(vector<char*>& filenames)
     struct dirent *pent = NULL; //structure nécessaire a la lecture de répertoire, elle contiendra le nom du/des fichier
     char const* path_to_files = "/mnt/c/Users/Marjorie/Documents/git_repo/freqNwords/Files_gz/";
     char* filename = NULL;
+    string suffix = ".gz";
                                            
     pdir = opendir (path_to_files); 
                                            
@@ -57,7 +79,7 @@ void collect_filenames(vector<char*>& filenames)
 			cout << "Erreur d'ouverture d'un fichier contenu dans le repertoire" << endl;     
 			return ; 
         }
-        if(strlen(pent->d_name) > 2)
+        if( has_suffix(pent->d_name, suffix) )
         {
 			filename = new char[strlen(path_to_files) + strlen(pent->d_name) + 1];
 			strcpy(filename, path_to_files);
@@ -66,82 +88,112 @@ void collect_filenames(vector<char*>& filenames)
 		}
     }
     closedir (pdir);	
-}
+}	
 
-void cut_large_file_into_smaller_files(char* large_filename, 
-	vector<string>& forbidden_characters, vector<string>& accepted_tags)
+FILE* get_file(char* large_filename, unsigned long long num_cut_files)
 {
-	unsigned long long num_cut_files = 1;
-
-	ifstream large_file(large_filename, ios::binary); //change binary
-	if( !large_file )
-	{
-		cerr << "Impossible to open the file " << large_filename << endl;
-		exit(EXIT_FAILURE);			
-	}
-	ofstream output;
 	char* cut_filename = NULL;
+	FILE* output = NULL;
 	
 	// change num_cut_files to char*
 	char const* num_cut_filename = to_string(num_cut_files).c_str();
 	
 	// concat large_filename + num_cut_files
-	cut_filename = new char[strlen(large_filename) + strlen(num_cut_filename) + 1];
+	cut_filename = new char[strlen(large_filename)-3 + strlen(num_cut_filename) + 1];
 	strcpy(cut_filename, large_filename);
+	cut_filename[strlen(large_filename)-3] = '\0';
 	strcat(cut_filename, num_cut_filename);
-	
-	
-	output.open(cut_filename, ios::out | ios::trunc);
-	if(!output)
-	{
-		cerr << "Impossible to open the file " << cut_filename << endl;
-		exit(EXIT_FAILURE);		
-	}
-	string line;
-	string words_tags = "";
-	unsigned year, nb_match, nb_volume;
-	int nb_lines = 0;
-	
-	cout << "Doing " << large_filename << "..." << endl;
-	cout << "\tDoing " << cut_filename << "..." << endl;
-	
-	while(std::getline(large_file, line))
-	{
-		
-		if(nb_lines >= CUT_SIZE)
-		{
-			nb_lines = 0;
-			output.close();
-			++num_cut_files;
-			delete[] cut_filename;
-			
-			// change num_cut_files to char*
-			char const* num_cut_filename = to_string(num_cut_files).c_str();
-			
-			// concat large_filename + num_cut_files
-			cut_filename = new char[strlen(large_filename) + strlen(num_cut_filename) + 1];
-			strcpy(cut_filename, large_filename);
-			strcat(cut_filename, num_cut_filename);
-			
-			output.open(cut_filename, ios::out | ios::trunc);
-			if(!output)
-			{
-				cerr << "Impossible to open the file " << cut_filename << endl;
-				exit(EXIT_FAILURE);		
-			}
-			cout << "\tDoing " << cut_filename << "..." << endl;	
-		}
-		
-		if(valid_line(line, words_tags, year, nb_match, nb_volume, forbidden_characters, accepted_tags))
-		{
-			output << words_tags << "\t" << year << "\t" << nb_match << "\t" << nb_volume << endl;
-			cout << "CORRECT: " << words_tags << "\t" << year << "\t" << nb_match << "\t" << nb_volume << endl;
-			++ nb_lines;
-		}
-	}
+
+	// open output file
+	output = fopen(cut_filename, "w");
+	if( output == NULL )
+		print_error("Impossible to open the file ", cut_filename);
+	cout << "\tDoing: " << cut_filename << "\n";
 	delete[] cut_filename;
-	output.close();
-	large_file.close();
+	return output;
+}
+	
+void print_error(string message, char* cut_filename)
+{
+	cerr << message << cut_filename << "\n";
+	exit(EXIT_FAILURE);
+}	
+	
+void cut_large_file_into_smaller_files(char* large_filename, 
+	vector<string>& forbidden_characters, vector<string>& accepted_tags)
+{
+	unsigned long long num_cut_files = 1;
+	FILE* output = get_file(large_filename, num_cut_files);
+	
+	gzFile large_file = gzopen(large_filename, "rb");
+	if( large_file == NULL )
+		print_error("Impossible to open the file ", large_filename);	
+	
+	unsigned char buffer[CHUNK_SIZE];
+	unsigned int unzipped_bytes = 1;
+	
+	string word_tag;
+	stringstream token("");
+	unsigned year, nb_match, nb_volume;
+	unsigned nb_lines = 0;
+	int err;
+	while(1)
+	{
+		memset(buffer, 0, sizeof(buffer));
+		unzipped_bytes = gzread(large_file, buffer, CHUNK_SIZE-1);
+		if(unzipped_bytes <= 0)
+		{
+            if (gzeof (large_file))
+            {
+				cout << "\nFINI\n";
+                break;
+            }
+            else 
+			{
+				const char * error_string;
+				error_string = gzerror (large_file, &err);
+				if (err) 
+				{
+					fprintf (stderr, "Error: %s.\n", error_string);
+					break;
+				}
+			}
+		}
+		buffer[CHUNK_SIZE-1] = '\0';
+		for(unsigned i=0; i<strlen((char*)buffer); ++i)
+		{
+			
+			if(nb_lines >= CUT_SIZE)
+			{
+				nb_lines = 0;
+				++num_cut_files;
+				fclose(output);
+				output = get_file(large_filename, num_cut_files);
+			}
+			if( buffer[i] != '\n' )
+				token << buffer[i];
+			else
+			{
+				if( valid_line(token.str(), word_tag, year, nb_match, 
+					nb_volume, forbidden_characters, accepted_tags) )
+				{
+					fprintf(output, "%s\t%d\t%d\t%d\n", 
+						word_tag.c_str(), year, nb_match, nb_volume);
+					++ nb_lines;
+				}
+				token.str(std::string());
+				token.clear();
+			}
+			
+		}
+	}
+	bool not_empty = static_cast<bool>(token >> word_tag);
+	if(not_empty)
+		cerr << "WARNING -- didn't read the entire file: " <<
+			"has left :["<< word_tag <<"]\n"; 
+
+	gzclose(large_file);
+	fclose(output);
 }
 
 
@@ -158,25 +210,22 @@ void collect_words_tags(string line, vector<string>& words_tags)
 	words_tags.push_back(line);
 }
 
-// line = "mot_TAG mot_TAG mot_TAG mot_TAG"
-// words_tags = {"mot_TAG", "mot_TAG", "mot_TAG", "mot_TAG"}
-bool valid_words_tags(string line,
-	vector<string>& forbidden_characters, vector<string>& accepted_tags)
+bool valid_word_tag(string line, vector<string>& forbidden_characters, vector<string>& accepted_tags)
 {
 	vector<string> words_tags;
 	collect_words_tags(line, words_tags);
 	
 	if(words_tags.size() != NB_NGRAM)
 		return false;
-	
+		
+		
 	string word;
 	string tag;
 	string delimiter = "_";
 	size_t pos = 0;
-	// treat word_tag
 	for (unsigned i=0; i<words_tags.size(); ++i)
-	{	
-		// pas de _ présent
+	{		
+		// pas de "_" présent
 		if (words_tags[i].find(delimiter) == std::string::npos)
 			return false;
 		
@@ -194,8 +243,9 @@ bool valid_words_tags(string line,
 		if( std::find(accepted_tags.begin(), accepted_tags.end(), tag) == accepted_tags.end() )
 			return false;
 	}
-	return true;
+	return true;		
 }
+
 
 bool valid_line(string line, string& words_tags, unsigned& year, 
 	unsigned& nb_match, unsigned& nb_volume, 
@@ -216,7 +266,7 @@ bool valid_line(string line, string& words_tags, unsigned& year,
 		//words + tags
 		if(position == 1)
 		{
-			if( !valid_words_tags(token, forbidden_characters, accepted_tags) )
+			if( !valid_word_tag(token, forbidden_characters, accepted_tags) )
 				return false;
 			words_tags = token;
 		}
@@ -264,12 +314,12 @@ int main(int argc, char** argv)
 		"PRON", "DET", "ADP", "CONJ", "PRT"};
 		
 	auto start = high_resolution_clock::now();
-	
+
 	collect_filenames(filenames);
     cut_large_file_into_smaller_files_handler(filenames, 
 		forbidden_characters, accepted_tags);
     destroy_filenames(filenames);
-    
+
 	auto stop = high_resolution_clock::now(); 
 	auto duration = duration_cast<std::chrono::minutes>(stop - start);
 	auto duration_seconds = duration_cast<std::chrono::seconds>(stop - start);

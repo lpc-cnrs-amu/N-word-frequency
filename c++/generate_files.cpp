@@ -9,8 +9,6 @@
 #include <algorithm>
 #include <chrono>
 #include <cstdio>
-#include <future>
-#include <thread>
 #include "zlib1211/zlib.h"
 
 #define CUT_SIZE 100000
@@ -172,6 +170,7 @@ bool generate_file(char* large_filename,
 	unsigned nb_match_min = 100000;
 	unsigned nb_volume_max = 0;
 	unsigned nb_volume_min = 100000;
+	bool one_valid_line = false;
 							
 	while(1)
 	{
@@ -210,7 +209,7 @@ bool generate_file(char* large_filename,
 			{
 				if( valid_line(token.str(), word_tag, year, nb_match, 
 					nb_volume, forbidden_characters, accepted_tags) )
-				{
+				{		
 					// find a new ngram so we write the precedent (except for the 1st line of the file)
 					if(word_tag != precedent_word_tag && precedent_word_tag != "")
 					{
@@ -275,10 +274,13 @@ bool generate_file(char* large_filename,
 	// write the last treated line
 	else
 	{
-		fprintf(output, "%s\t%d\t%d\t%d\t%.2f\t%.2f\t%d\t%d\t%d\t %d\t%d\t%d\t\n", 
-			word_tag.c_str(), somme_year, somme_nb_match, somme_nb_volume, 
-			mean_pondere_match/static_cast<float>(somme_nb_match), mean_pondere_volume/static_cast<float>(somme_nb_volume), 
-			year_max, year_min, nb_match_max, nb_match_min, nb_volume_max, nb_volume_min);
+		if(one_valid_line)
+		{
+			fprintf(output, "%s\t%d\t%d\t%d\t%.2f\t%.2f\t%d\t%d\t%d\t %d\t%d\t%d\t\n", 
+				word_tag.c_str(), somme_year, somme_nb_match, somme_nb_volume, 
+				mean_pondere_match/static_cast<float>(somme_nb_match), mean_pondere_volume/static_cast<float>(somme_nb_volume), 
+				year_max, year_min, nb_match_max, nb_match_min, nb_volume_max, nb_volume_min);
+		}
 	}
 	gzclose(large_file);
 	fclose(output);

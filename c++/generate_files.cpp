@@ -68,7 +68,7 @@ void collect_filenames(vector<char*>& filenames)
 {
 	DIR *pdir = NULL; //pointeur vers un dossier
     struct dirent *pent = NULL; //structure nécessaire a la lecture de répertoire, elle contiendra le nom du/des fichier
-    char const* path_to_files = "/mnt/c/Users/Marjorie/Documents/git_repo/freqNwords/files_gz/";
+    char const* path_to_files = "/mnt/j/ENG_4GRAM/";
     char* filename = NULL;
     string suffix = ".gz";
                                            
@@ -110,7 +110,7 @@ FILE* get_file(char* large_filename)
 	filename_without_path.pop_back();
 	filename_without_path.pop_back();
 	filename_without_path = filename_without_path + "_treated";
-	string cut_filename = "/mnt/c/Users/Marjorie/Documents/git_repo/freqNwords/files_treated/" + filename_without_path;
+	string cut_filename = "/mnt/j/eng_4grams_treated/" + filename_without_path;
 
 	// open output file
 	FILE* output = fopen(cut_filename.c_str(), "w");
@@ -284,7 +284,7 @@ bool generate_file(char* large_filename,
 	}
 	gzclose(large_file);
 	fclose(output);
-	
+	/*
 	int supp = remove( large_filename );
 	if( supp != 0 )
 	{
@@ -296,7 +296,7 @@ bool generate_file(char* large_filename,
 		cout << "Delete " << large_filename << "\n";
 		cerr << "Delete " << large_filename << "\n"; 		
 	}
-    
+    */
 	return true;
 }
 

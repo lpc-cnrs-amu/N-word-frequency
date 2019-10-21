@@ -58,7 +58,7 @@ void collect_filenames(QueueSafe<string>& queue_filenames)
 {
 	DIR *pdir = NULL; //pointeur vers un dossier
     struct dirent *pent = NULL; //structure nécessaire a la lecture de répertoire, elle contiendra le nom du/des fichier
-    string path_to_files("/mnt/c/Users/Marjorie/Documents/git_repo/freqNwords/files_gz/");
+    string path_to_files("/mnt/j/ENG_4GRAM/");
     string filename("");
     string suffix(".gz");
                                            
@@ -98,14 +98,14 @@ FILE* get_file(unsigned thread_id, string filename)
 	filename.pop_back();
 	filename.pop_back();
 	filename += "_treated";
-	filename = "/mnt/c/Users/Marjorie/Documents/git_repo/freqNwords/files_treated/" + filename;
+	filename = "/mnt/j/eng_4grams_treated_thread/" + filename;
 
 	// open output file
 	FILE* output = fopen(filename.c_str(), "w");
 	if( output == NULL )
 		print_error("Impossible to open the file ", filename);
 	cout << "\tThread " << thread_id << " : " << filename << "\n";
-	//cerr << "\tThread " << thread_id << " : " << filename << "\n";
+	cerr << "\tThread " << thread_id << " : " << filename << "\n";
 
 	return output;
 }
@@ -113,12 +113,12 @@ FILE* get_file(unsigned thread_id, string filename)
 void print_error(string message, char* cut_filename)
 {
 	cout << message << cut_filename << "\n";
-	//cerr << message << cut_filename << "\n";
+	cerr << message << cut_filename << "\n";
 }	
 void print_error(string message, string cut_filename)
 {
 	cout << message << cut_filename << "\n";
-	//cerr << message << cut_filename << "\n";
+	cerr << message << cut_filename << "\n";
 }		
 	
 void generate_file(unsigned thread_id, QueueSafe<string>& queue_filenames, 
@@ -264,9 +264,9 @@ void generate_file(unsigned thread_id, QueueSafe<string>& queue_filenames,
 			cout << "WARNING -- didn't read the entire file " 
 				 << large_filename << " : has left :[" 
 				 << word_tag <<"]\n"; 
-			/*cerr << "WARNING -- didn't read the entire file " 
+			cerr << "WARNING -- didn't read the entire file " 
 				 << large_filename << " : has left :[" 
-				 << word_tag <<"]\n"; */
+				 << word_tag <<"]\n";
 		}
 		
 		// write the last treated line
@@ -283,6 +283,7 @@ void generate_file(unsigned thread_id, QueueSafe<string>& queue_filenames,
 		gzclose(large_file);
 		fclose(output);
 		cout << "Thread " << thread_id << " finish " << large_filename << "\n";
+		cerr << "Thread " << thread_id << " finish " << large_filename << "\n";
 		/*
 		int supp = remove( large_filename );
 		if( supp != 0 )
@@ -415,7 +416,9 @@ int main(int argc, char** argv)
 	auto stop = high_resolution_clock::now(); 
 	auto duration = duration_cast<std::chrono::minutes>(stop - start);
 	cout << "Time taken : " << endl;
-	cout << duration.count() << " minutes" << endl;
+	cout << duration.count() << " minutes" << endl;	
+	cerr << "Time taken : " << endl;
+	cerr << duration.count() << " minutes" << endl;
 	
     return 0;
 }

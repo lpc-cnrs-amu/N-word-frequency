@@ -14,9 +14,12 @@
 #include "OccurrencesSafe.hpp"
 
 #define LINE_SIZE 1024
+#define NB_NGRAM 4
 
 using namespace std;
 using namespace std::chrono;
+
+mutex print_mutex;
 
 bool has_suffix(const char* name, string &suffix);
 
@@ -24,6 +27,7 @@ void collect_filenames(QueueSafe<string>& queue_filenames);
 
 void print_error(string message, char* cut_filename);
 void print_error(string message, string cut_filename);
+void print_ok_safe(unsigned thread_id, string message, string filename);
 
 void calcul_occurrences(unsigned thread_id, QueueSafe<string>& queue_filenames, 
 	OccurrencesSafe& occurrences);
@@ -85,6 +89,7 @@ void calcul_occurrences(unsigned thread_id, QueueSafe<string>& queue_filenames,
 	OccurrencesSafe& occurrences)
 {	
 	char buffer[LINE_SIZE];
+	char tmp[LINE_SIZE];
 	string line;
 	string token;
 	string delimiter = "\t";
@@ -103,17 +108,14 @@ void calcul_occurrences(unsigned thread_id, QueueSafe<string>& queue_filenames,
 			print_error("Impossible to open the file ", large_filename);
 			break;	
 		}
+		print_ok_safe(thread_id, "start", large_filename);
 								
 		while( fgets(buffer, sizeof(buffer), input) )
 		{
-
-			//buffer[ ] = '\0';
 			line = buffer;
-			cout << line << endl;
-			cout << "size of line = " << strlen(buffer) << endl;
 			position = 0;
 			pos = 0;
-			
+						
 			// cut by \t
 			while ((pos = line.find(delimiter)) != std::string::npos) 
 			{
@@ -128,13 +130,18 @@ void calcul_occurrences(unsigned thread_id, QueueSafe<string>& queue_filenames,
 				else if(position == 4)
 					occurrences.add_volume( stoi( token ) );
 			}
-			
 			memset(buffer, 0, sizeof(buffer));
 		}
 		fclose(input);
-		cout << "Thread " << thread_id << " finish " << large_filename << "\n";
-		cerr << "Thread " << thread_id << " finish " << large_filename << "\n";
+		print_ok_safe(thread_id, "finish", large_filename);
 	}
+}
+
+void print_ok_safe(unsigned thread_id, string message, string filename)
+{
+	lock_guard<mutex> guard(print_mutex);
+	cout << "Thread " << thread_id << " " << message << " " << filename << "\n";
+	cerr << "Thread " << thread_id << " " << message << " " << filename << "\n";
 }
 
 
@@ -162,7 +169,7 @@ int main(int argc, char** argv)
 		print_error("Cannot open file ", argv[1]);
 		return -1;
 	}
-	fprintf(output, "Total match\tTotal volume\n%d\t%d\n", 
+	fprintf(output, "Total match\tTotal volume\n%llu\t%llu\n", 
 		occurrences.get_total_match(), occurrences.get_total_volume());
 
 	auto stop = high_resolution_clock::now(); 

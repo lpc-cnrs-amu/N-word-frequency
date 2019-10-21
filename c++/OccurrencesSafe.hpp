@@ -5,8 +5,8 @@
 class OccurrencesSafe
 {
 	private:
-		unsigned total_match = 0;
-		unsigned total_volume = 0;
+		unsigned long long total_match = 0;
+		unsigned long long total_volume = 0;
 		std::mutex _mutex;
 		std::condition_variable _condition_variable;
 	public:
@@ -22,7 +22,18 @@ class OccurrencesSafe
 			total_volume += volume;
 		}
 		
-		unsigned get_total_match() { return total_match; }
-		unsigned get_total_volume() { return total_volume; }
+		unsigned long long get_total_match() { return total_match; }
+		unsigned long long get_total_volume() { return total_volume; }
+		
+		void print_total_match()
+		{
+			std::lock_guard<std::mutex> guard(_mutex);
+			std::cout << "total match = " << total_match << std::endl;
+		}
+		void print_total_volume()
+		{
+			std::lock_guard<std::mutex> guard(_mutex);
+			std::cout << "total volume = " << total_volume << std::endl;
+		}
 };
 

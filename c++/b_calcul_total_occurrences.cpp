@@ -44,7 +44,7 @@ void collect_filenames(QueueSafe<string>& queue_filenames)
 {
 	DIR *pdir = NULL; //pointeur vers un dossier
     struct dirent *pent = NULL; //structure nécessaire a la lecture de répertoire, elle contiendra le nom du/des fichier
-    string path_to_files("/mnt/c/Users/Marjorie/Documents/git_repo/freqNwords/files_treated/");
+    string path_to_files("/mnt/j/eng_4grams_treated_thread/");
     string filename("");
     string suffix("_treated");
                                            
@@ -89,7 +89,6 @@ void calcul_occurrences(unsigned thread_id, QueueSafe<string>& queue_filenames,
 	OccurrencesSafe& occurrences)
 {	
 	char buffer[LINE_SIZE];
-	char tmp[LINE_SIZE];
 	string line;
 	string token;
 	string delimiter = "\t";

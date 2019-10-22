@@ -28,8 +28,8 @@ void print_error(string message, char* cut_filename);
 void print_error(string message, string cut_filename);
 void print_ok_safe(unsigned thread_id, string message, string filename);
 
-void calcul_occurrences(unsigned thread_id, QueueSafe<string>& queue_filenames, 
-	OccurrencesSafe& occurrences);
+void calcul_freq(unsigned thread_id, QueueSafe<string>& queue_filenames, 
+	unsigned long long& total_match, unsigned long long& total_volume);
 
 
 bool has_suffix(const char* name, string &suffix)
@@ -90,11 +90,14 @@ FILE* get_file(unsigned thread_id, string filename)
 	size_t pos = 0;
 	while ((pos = filename.find(delimiter)) != std::string::npos) 
 		filename.erase(0, pos + delimiter.length());
-	filename.pop_back();
-	filename.pop_back();
-	filename.pop_back();
+
+	pos = filename.find("_treated");
+	if (pos != std::string::npos)
+		filename.erase(pos, filename.length());		
 	filename += "_frequences";
 	filename = "/mnt/j/eng_4grams_frequences_thread/" + filename;
+	
+	cout << filename << endl;
 
 	// open output file
 	FILE* output = fopen(filename.c_str(), "w");
@@ -157,18 +160,20 @@ void calcul_freq(unsigned thread_id, QueueSafe<string>& queue_filenames,
 				if(position > 4)
 					break;
 				else if(position == 3)
-					freq_match = stoi( token ) / ; // converts unsigned long long to double ??
+					freq_match = stoi( token ) / (total_match*0.1);
 				else if(position == 4)
-					freq_volume = stoi( token ) / ;
+					freq_volume = stoi( token ) / (total_volume*0.1);
 			}
 			
-			if(position < 3 || position < 4)
+			if( position < 4 )
 			{
-				cerr << "WARNING mauvaise ligne\n";
+				cout << "WARNING bad line on file " << large_filename << " : " << buffer << "\n";
+				cerr << "WARNING bad line on file " << large_filename << " : " << buffer << "\n";
 			}
 			else
 			{
-				fprintf(); // print la ligne
+				// warning : write "%s\t%.10e\t%.10e\n" if we fix the _treated files (\t in last position)
+				fprintf(output, "%s%.10e\t%.10e\n", strtok(buffer, "\n"), freq_match, freq_volume);
 			}
 			
 			memset(buffer, 0, sizeof(buffer));
@@ -202,19 +207,39 @@ bool get_total_occurrences(const char* filename,
 	return true;	
 }
 
-
+void print_usage(const char* exename)
+{
+    fprintf(stderr, "NOM \n");
+    fprintf(stderr, "\t%s - Calcul la fréquence de chaque ngrams.\n\n", exename);
+    fprintf(stderr, "SYNOPSIS\n");
+    fprintf(stderr, "\t%s [-h] fichier_total_occurrences\n\n", exename);
+    fprintf(stderr, "DESCRIPTION \n");
+    fprintf(stderr, "\tCalcule la fréquence de chaque ngrams des fichiers finissant par '_treated' contenus dans le répertoire de votre choix. \
+    Utilise le fichier fichier_total_occurrences contenant le nombre total d'occurrences et de volumes. Ce fichier est obtenu avec le programme b_calcul_total_occurrences.cpp\n\n");
+    fprintf(stderr, "ARGUMENTS\n");
+    fprintf(stderr, "\t -h\n\t\tAffiche un message d'aide sur la sortie d'erreur et termine normalement.\n\n");
+    fprintf(stderr, "\t fichier_total_occurrences\n\t\tContient le nombre total d'occurrences et de volumes. Ce fichier est obtenu avec le programme b_calcul_total_occurrences.cpp\n\n");
+}
 
 int main(int argc, char** argv)
 {
+	// print usage if the user has written the command incorrectly
+	if( argc != 2 || (argc > 1 && !strcmp(argv[1],"-h")) )
+	{
+		print_usage(argv[0]);
+		return 0;
+	}	
+	
+	// Get the total occurrences and the total nb of volumes
+	unsigned long long total_match, total_volume;
+	if( !get_total_occurrences(argv[1], total_match, total_volume) )
+		return -1;
+
+	// Calculate the frequences for each file in the queue_filenames
 	QueueSafe<string> queue_filenames;
 	unsigned nb_cores = std::thread::hardware_concurrency();
-	vector<thread> threads;
-	unsigned long long total_match, total_volume;
-
+	vector<thread> threads;	
 	collect_filenames(queue_filenames);
-	get_total_occurrences(argv[1], total_match, total_volume);
-	
-	
 	auto start = high_resolution_clock::now();
 	for(unsigned i=0; i<nb_cores; ++i)
 	{

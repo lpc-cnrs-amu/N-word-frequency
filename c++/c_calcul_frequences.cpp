@@ -121,6 +121,7 @@ void calcul_freq(unsigned thread_id, QueueSafe<string>& queue_filenames,
 	unsigned position = 0;
 	unsigned nb_match = 0;
 	unsigned nb_volume = 0;
+	unsigned cpt_line = 0;
 	float freq_match = 0;
 	float freq_volume = 0;
 	size_t pos = 0;
@@ -143,9 +144,11 @@ void calcul_freq(unsigned thread_id, QueueSafe<string>& queue_filenames,
 			break;
 					
 		print_ok_safe(thread_id, "start", large_filename);
-								
+		
+		cpt_line = 0;		
 		while( fgets(buffer, sizeof(buffer), input) )
 		{
+			++cpt_line;
 			line = buffer;
 			position = 0;
 			pos = 0;
@@ -167,8 +170,8 @@ void calcul_freq(unsigned thread_id, QueueSafe<string>& queue_filenames,
 			
 			if( position < 4 )
 			{
-				cout << "WARNING bad line on file " << large_filename << " : " << buffer << "\n";
-				cerr << "WARNING bad line on file " << large_filename << " : " << buffer << "\n";
+				cout << "WARNING bad line on file " << large_filename << ", line " << cpt_line << " : " << buffer << "\n";
+				cerr << "WARNING bad line on file " << large_filename << ", line " << cpt_line << " : " << buffer << "\n";
 			}
 			else
 			{

@@ -213,7 +213,7 @@ bool generate_file(char* large_filename,
 					// find a new ngram so we write the precedent (except for the 1st line of the file)
 					if(word_tag != precedent_word_tag && precedent_word_tag != "")
 					{
-						fprintf(output, "%s\t%d\t%d\t%d\t%.2f\t%.2f\t%d\t%d\t%d\t %d\t%d\t%d\t\n", 
+						fprintf(output, "%s\t%d\t%d\t%d\t%.2f\t%.2f\t%d\t%d\t%d\t %d\t%d\t%d\n", 
 							precedent_word_tag.c_str(), somme_year, somme_nb_match, somme_nb_volume, 
 							mean_pondere_match/static_cast<float>(somme_nb_match), mean_pondere_volume/static_cast<float>(somme_nb_volume), 
 							year_max, year_min, nb_match_max, nb_match_min, nb_volume_max, nb_volume_min);
@@ -276,7 +276,7 @@ bool generate_file(char* large_filename,
 	{
 		if(one_valid_line)
 		{
-			fprintf(output, "%s\t%d\t%d\t%d\t%.2f\t%.2f\t%d\t%d\t%d\t %d\t%d\t%d\t\n", 
+			fprintf(output, "%s\t%d\t%d\t%d\t%.2f\t%.2f\t%d\t%d\t%d\t %d\t%d\t%d\n", 
 				word_tag.c_str(), somme_year, somme_nb_match, somme_nb_volume, 
 				mean_pondere_match/static_cast<float>(somme_nb_match), mean_pondere_volume/static_cast<float>(somme_nb_volume), 
 				year_max, year_min, nb_match_max, nb_match_min, nb_volume_max, nb_volume_min);

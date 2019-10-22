@@ -15,6 +15,7 @@
 
 #define LINE_SIZE 1024
 #define NB_NGRAM 4
+#define YEAR 1970
 
 using namespace std;
 using namespace std::chrono;
@@ -193,7 +194,7 @@ void print_usage(const char* exename)
     fprintf(stderr, "\t%s - Calcul le nombre total de ngrams (somme des occurrences des ngrams).\
      Calcul le nombre total de volumes avec le fichier totalcounts. Ecrit ces deux résultats dans un fichier de sortie.\n\n", exename);
     fprintf(stderr, "SYNOPSIS\n");
-    fprintf(stderr, "\t%s [-h] nom_du_fichier_de_sortie fichier_totalcount\n\n");
+    fprintf(stderr, "\t%s [-h] nom_du_fichier_de_sortie fichier_totalcount\n\n", exename);
     fprintf(stderr, "DESCRIPTION \n");
     fprintf(stderr, "\tCalcule le nombre total de ngrams à l'aide des fichiers finissant par '_treated' contenus dans le répertoire de votre choix.\n\n");
     fprintf(stderr, "ARGUMENTS\n");
@@ -202,8 +203,8 @@ void print_usage(const char* exename)
     fprintf(stderr, "\t fichier_totalcount\n\t\tSert à calculer le nombre total de volumes.\n\n");
 }
 
-bool write_output(const char* filename, unsigned long long& total_match, 
-	unsigned long long& total_volume)
+bool write_output(const char* filename, unsigned long long total_match, 
+	unsigned long long total_volume)
 {
 	FILE* output = fopen(filename, "w");
 	if( output == NULL )

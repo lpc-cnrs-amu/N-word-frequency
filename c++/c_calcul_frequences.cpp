@@ -185,44 +185,24 @@ void print_ok_safe(unsigned thread_id, string message, string filename)
 	cerr << "Thread " << thread_id << " " << message << " " << filename << "\n";
 }
 
-void get_total_match(const char* filename, 
-	unsigned long long& total_match)
-{
-	FILE* file = fopen(filename, "r");
-	if( file == NULL )
-	{
-		print_error("Cannot open file ", filename);
-		return -1;
-	}
-	char buffer[CHUNK_SIZE];
-	unsigned long long total_volume;
-	fgets(buffer, sizeof(buffer), file);
-	fscanf(file, "%llu\t%llu", total_match, &total_volume);
-	cout << total_match << " " << total_volume << endl;
-	fclose(file);	
-}
-
-void get_total_volume(const char* filename,
+bool get_total_occurrences(const char* filename, 
+	unsigned long long& total_match,
 	unsigned long long& total_volume)
 {
 	FILE* file = fopen(filename, "r");
 	if( file == NULL )
 	{
 		print_error("Cannot open file ", filename);
-		return -1;
+		return false;
 	}
-	unsigned year, nb_1gram, nb_pages, nb_volumes;
-	
-	total_volume = 0;
-	while( fscanf(file, "[^ ]\t%d\t%llu\t%llu\t%llu", &year, &nb_1gram, &nb_pages, &nb_volumes) == 4 )
-	{
-		if( year >= YEAR )
-			total_volume += nb_volumes;
-	}
-	
-	cout << " total volume : " << total_volume << endl;
-	fclose(file);		
+	char buffer[1000];
+	fgets(buffer, sizeof(buffer), file);
+	fscanf(file, "%llu\t%llu", &total_match, &total_volume);
+	fclose(file);
+	return true;	
 }
+
+
 
 int main(int argc, char** argv)
 {
@@ -232,8 +212,7 @@ int main(int argc, char** argv)
 	unsigned long long total_match, total_volume;
 
 	collect_filenames(queue_filenames);
-	get_total_occurrences(argv[1], total_match);
-	get_total_volume(argv[2], total_volume);
+	get_total_occurrences(argv[1], total_match, total_volume);
 	
 	
 	auto start = high_resolution_clock::now();

@@ -28,9 +28,13 @@ void collect_filenames(QueueSafe<string>& queue_filenames);
 void print_error(string message, char* cut_filename);
 void print_error(string message, string cut_filename);
 void print_ok_safe(unsigned thread_id, string message, string filename);
+void print_usage();
 
 void calcul_occurrences(unsigned thread_id, QueueSafe<string>& queue_filenames, 
 	OccurrencesSafe& occurrences);
+
+bool write_output(const char* filename, unsigned long long& total_match, 
+	unsigned long long& total_volume);
 
 
 bool has_suffix(const char* name, string &suffix)
@@ -143,14 +147,93 @@ void print_ok_safe(unsigned thread_id, string message, string filename)
 	cerr << "Thread " << thread_id << " " << message << " " << filename << "\n";
 }
 
+bool get_total_volume(const char* filename,
+	unsigned long long& total_volume)
+{
+	ifstream file(filename);
+	if( !file )
+	{
+		cout << "Cannot open file "<< filename << endl;
+		return false;
+	}
+	char tab;
+	unsigned year;
+	unsigned long long nb_1gram, nb_pages, nb_volumes;
+	total_volume = 0;
+	
+	file.get(tab); // read the first space
+	file.get(tab);
+	while( tab == '\t'  )
+	{
+		if (file >> year)
+		{
+			file.get(tab);
+			file >> nb_1gram;
+			file.get(tab);
+			file >> nb_pages;
+			file.get(tab);
+			file >> nb_volumes;
+			if( year >= YEAR )
+				total_volume += nb_volumes;
+			file.get(tab);
+			
+			cout << year << " " << nb_1gram << " " << nb_pages << " " << nb_volumes << endl; 
+		}
+		else
+			tab = ' ';
+	}
+	
+	file.close();	
+	return true;	
+}
+
+void print_usage(const char* exename)
+{
+    fprintf(stderr, "NOM \n");
+    fprintf(stderr, "\t%s - Calcul le nombre total de ngrams (somme des occurrences des ngrams).\
+     Calcul le nombre total de volumes avec le fichier totalcounts. Ecrit ces deux résultats dans un fichier de sortie.\n\n", exename);
+    fprintf(stderr, "SYNOPSIS\n");
+    fprintf(stderr, "\t%s [-h] nom_du_fichier_de_sortie fichier_totalcount\n\n");
+    fprintf(stderr, "DESCRIPTION \n");
+    fprintf(stderr, "\tCalcule le nombre total de ngrams à l'aide des fichiers finissant par '_treated' contenus dans le répertoire de votre choix.\n\n");
+    fprintf(stderr, "ARGUMENTS\n");
+    fprintf(stderr, "\t -h\n\t\tAffiche un message d'aide sur la sortie d\"erreur et termine normalement.\n\n");
+    fprintf(stderr, "\t nom_du_fichier_de_sortie\n\t\tContiendra le nombre total d'occurrences et de volumes.\n\n");
+    fprintf(stderr, "\t fichier_totalcount\n\t\tSert à calculer le nombre total de volumes.\n\n");
+}
+
+bool write_output(const char* filename, unsigned long long& total_match, 
+	unsigned long long& total_volume)
+{
+	FILE* output = fopen(filename, "w");
+	if( output == NULL )
+	{
+		print_error("Cannot open file ", filename);
+		return false;
+	}
+	fprintf(output, "Total match\tTotal volume\n%llu\t%llu\n", 
+		total_match, total_volume);
+	fclose(output);
+}
 
 int main(int argc, char** argv)
 {
+	// print usage if the user has written the command incorrectly
+	if( argc != 3 || (argc > 1 && !strcmp(argv[1],"-h")) )
+	{
+		print_usage(argv[0]);
+		return 0;
+	}
+	
+	// Calculate the total nb of volumes with the totalcount file
+	unsigned long long total_volume;
+	get_total_volume(argv[2], total_volume);
+	
+	// Calculate the total nb of occurrences with thread (one file per thread)
 	QueueSafe<string> queue_filenames;
 	OccurrencesSafe occurrences;
 	unsigned nb_cores = std::thread::hardware_concurrency();
 	vector<thread> threads;
-
 	collect_filenames(queue_filenames);
 	auto start = high_resolution_clock::now();
 	for(unsigned i=0; i<nb_cores; ++i)
@@ -162,16 +245,10 @@ int main(int argc, char** argv)
 		t.join();
 	threads.clear();
 	
-	FILE* output = fopen(argv[1], "w");
-	if( output == NULL )
-	{
-		print_error("Cannot open file ", argv[1]);
-		return -1;
-	}
-	fprintf(output, "Total match\tTotal volume\n%llu\t%llu\n", 
-		occurrences.get_total_match(), occurrences.get_total_volume());
-	fclose(output);
+	// Write in output file	
+	write_output(argv[1], occurrences.get_total_match(), total_volume);
 	
+	// Calcul time taken
 	auto stop = high_resolution_clock::now(); 
 	auto duration = duration_cast<std::chrono::minutes>(stop - start);
 	cout << "Time taken : " << endl;

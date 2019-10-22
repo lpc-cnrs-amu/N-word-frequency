@@ -9,6 +9,9 @@
 #include <algorithm>
 #include <chrono>
 #include <cstdio>
+#include <thread>
+#include "QueueSafe.hpp"
+#include "OccurrencesSafe.hpp"
 
 #define LINE_SIZE 1024
 #define NB_NGRAM 4
@@ -17,19 +20,23 @@
 using namespace std;
 using namespace std::chrono;
 
-void print_ok_safe(string message, string filename);
-bool get_total_volume(const char* filename,
-	unsigned long long& total_volume);
-void print_usage(const char* exename);
-bool write_output(const char* filename, unsigned long long total_match, 
-	unsigned long long total_volume);
-void calcul_handler(vector<string>& filenames, unsigned long long& total_match);
-bool calcul_occurrences(string large_filename, unsigned long long& total_match);
-void print_error(string message);
-void print_error(string message, string cut_filename);
-void print_error(string message, char* cut_filename);
+mutex print_mutex;
+
 bool has_suffix(const char* name, string &suffix);
-void collect_filenames(vector<string>& filenames);
+
+void collect_filenames(QueueSafe<string>& queue_filenames);
+
+void print_error(string message, char* cut_filename);
+void print_error(string message, string cut_filename);
+void print_ok_safe(unsigned thread_id, string message, string filename);
+void print_usage();
+
+void calcul_occurrences(unsigned thread_id, QueueSafe<string>& queue_filenames, 
+	OccurrencesSafe& occurrences);
+
+bool write_output(const char* filename, unsigned long long& total_match, 
+	unsigned long long& total_volume);
+
 
 bool has_suffix(const char* name, string &suffix)
 {
@@ -38,12 +45,11 @@ bool has_suffix(const char* name, string &suffix)
            str.compare(str.size() - suffix.size(), suffix.size(), suffix) == 0;
 }
 
-void collect_filenames(vector<string>& filenames)
+void collect_filenames(QueueSafe<string>& queue_filenames)
 {
 	DIR *pdir = NULL; //pointeur vers un dossier
     struct dirent *pent = NULL; //structure nécessaire a la lecture de répertoire, elle contiendra le nom du/des fichier
-    //string path_to_files("/mnt/j/eng_4grams_treated_thread/");
-    string path_to_files("/mnt/c/Users/Marjorie/Documents/git_repo/freqNwords/files_treated/");
+    string path_to_files("/mnt/j/eng_4grams_treated_thread/");
     string filename("");
     string suffix("_treated");
                                            
@@ -66,7 +72,7 @@ void collect_filenames(vector<string>& filenames)
         {
 			filename = pent->d_name;
 			filename = path_to_files + filename;
-			filenames.push_back(filename);
+			queue_filenames.push_front(filename);
 		}
     }
     closedir (pdir);	
@@ -81,75 +87,72 @@ void print_error(string message, string cut_filename)
 {
 	cout << message << cut_filename << "\n";
 	cerr << message << cut_filename << "\n";
-}	
-void print_error(string message)
-{
-	cout << message << "\n";
-	cerr << message << "\n";
-}
+}		
 
-bool calcul_occurrences(string large_filename, unsigned long long& total_match)
+
+void calcul_occurrences(unsigned thread_id, QueueSafe<string>& queue_filenames, 
+	OccurrencesSafe& occurrences)
 {	
 	char buffer[LINE_SIZE];
 	string line;
 	string token;
 	string delimiter = "\t";
-	unsigned position = 0, cpt_line = 0;
+	string large_filename;
+	unsigned position = 0;
 	size_t pos = 0;
 			
-	FILE* input = fopen(large_filename.c_str(), "r");
-	if( input == NULL )
+	while( !queue_filenames.empty() )
 	{
-		print_error("Impossible to open the file ", large_filename);
-		return false;	
-	}
-	print_ok_safe("start", large_filename);
-							
-	while( fgets(buffer, sizeof(buffer), input) )
-	{
-		++cpt_line;
-		line = buffer;
-		position = 0;
-		pos = 0;
-		//cout << buffer << endl;
-					
-		// cut by \t
-		while ((pos = line.find(delimiter)) != std::string::npos) 
+		if( !queue_filenames.try_pop(large_filename) )
+			continue;
+			
+		FILE* input = fopen(large_filename.c_str(), "r");
+		if( input == NULL )
 		{
-			++ position;
-			token = line.substr(0, pos);
-			line.erase(0, pos + delimiter.length());
-		
-			if(position == 3)
+			print_error("Impossible to open the file ", large_filename);
+			break;	
+		}
+		print_ok_safe(thread_id, "start", large_filename);
+								
+		while( fgets(buffer, sizeof(buffer), input) )
+		{
+			++cpt_line;
+			line = buffer;
+			position = 0;
+			pos = 0;
+						
+			// cut by \t
+			while ((pos = line.find(delimiter)) != std::string::npos) 
 			{
-				
-				//cout << stoi( token ) << endl;
-				total_match += stoi( token );
+				++ position;
+				token = line.substr(0, pos);
+				line.erase(0, pos + delimiter.length());
+			
+				if(position == 3)
+					occurrences.add_match( stoi( token ) );
 			}
+			if( line != "" )
+				++ position;
+			if( position != 12 )
+			{
+				cout << "WARNING bad line (" << cpt_line 
+					 << ") on file " << large_filename << " : " << buffer << "\n";
+				cerr << "WARNING bad line (" << cpt_line 
+					 << ") on file " << large_filename << " : " << buffer << "\n";
+			}
+			memset(buffer, 0, sizeof(buffer));
 		}
-		/*
-		if( line != "" )
-			++ position;
-		*/
-		if( position != 12 )
-		{
-			cout << "WARNING bad line (" << cpt_line 
-				 << ") on file " << large_filename << " : " << buffer << "\n";
-			cerr << "WARNING bad line (" << cpt_line 
-				 << ") on file " << large_filename << " : " << buffer << "\n";
-		}
-		memset(buffer, 0, sizeof(buffer));
+		
+		fclose(input);
+		print_ok_safe(thread_id, "finish", large_filename);
 	}
-	fclose(input);
-	print_ok_safe("finish", large_filename);
-	return true;
-	
 }
 
-void print_ok_safe(string message, string filename)
+void print_ok_safe(unsigned thread_id, string message, string filename)
 {
-	cout << message << " " << filename << "\n";
-	cerr << message << " " << filename << "\n";
+	lock_guard<mutex> guard(print_mutex);
+	cout << "Thread " << thread_id << " " << message << " " << filename << "\n";
+	cerr << "Thread " << thread_id << " " << message << " " << filename << "\n";
 }
 
 bool get_total_volume(const char* filename,
@@ -221,19 +224,6 @@ bool write_output(const char* filename, unsigned long long total_match,
 	fclose(output);
 }
 
-void calcul_handler(vector<string>& filenames, unsigned long long& total_match)
-{
-	for(unsigned i=0; i<filenames.size(); ++i)
-	{
-		if( !calcul_occurrences(filenames[i], total_match) )
-		{
-			cout << "didn't process the file " << filenames[i] << "\n";
-			cerr << "didn't process the file " << filenames[i] << "\n";
-		}
-	}
-}
-
-
 int main(int argc, char** argv)
 {
 	// print usage if the user has written the command incorrectly
@@ -242,19 +232,29 @@ int main(int argc, char** argv)
 		print_usage(argv[0]);
 		return 0;
 	}
-	auto start = high_resolution_clock::now();
 	
 	// Calculate the total nb of volumes with the totalcount file
-	unsigned long long total_volume, total_match = 0;
+	unsigned long long total_volume;
 	get_total_volume(argv[2], total_volume);
 	
-	// Calculate the total nb of occurrences with treated files
-	vector<string> filenames;
-	collect_filenames(filenames);
-	calcul_handler(filenames, total_match);
+	// Calculate the total nb of occurrences with thread (one file per thread)
+	QueueSafe<string> queue_filenames;
+	OccurrencesSafe occurrences;
+	unsigned nb_cores = std::thread::hardware_concurrency();
+	vector<thread> threads;
+	collect_filenames(queue_filenames);
+	auto start = high_resolution_clock::now();
+	for(unsigned i=0; i<nb_cores; ++i)
+	{
+		cout << "create thread " << i+1 << endl;
+		threads.emplace_back( [&]{calcul_occurrences( i+1, queue_filenames, occurrences ); } );
+	}
+	for(auto& t: threads)
+		t.join();
+	threads.clear();
 	
 	// Write in output file	
-	write_output(argv[1], total_match, total_volume);
+	write_output(argv[1], occurrences.get_total_match(), total_volume);
 	
 	// Calcul time taken
 	auto stop = high_resolution_clock::now(); 

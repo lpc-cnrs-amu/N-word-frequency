@@ -1,3 +1,6 @@
+#ifndef QUEUE_SAFE_HPP
+#define QUEUE_SAFE_HPP
+
 #include <mutex>
 #include <condition_variable>
 #include <queue>
@@ -37,3 +40,5 @@ class QueueSafe
 				std::cout << _queue[i] << std::endl;
 		}
 };
+
+#endif

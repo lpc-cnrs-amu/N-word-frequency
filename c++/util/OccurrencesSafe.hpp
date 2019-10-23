@@ -1,3 +1,6 @@
+#ifndef OCCURRENCES_SAFE_HPP
+#define OCCURRENCES_SAFE_HPP
+
 #include <mutex>
 #include <condition_variable>
 #include <queue>
@@ -37,3 +40,4 @@ class OccurrencesSafe
 		}
 };
 
+#endif

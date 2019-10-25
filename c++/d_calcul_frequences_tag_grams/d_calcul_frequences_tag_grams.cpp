@@ -10,7 +10,7 @@
 using namespace std;
 using namespace std::chrono;
 
-bool collect_tags(string token, string& tags, vector<string>& accepted_tags)
+bool collect_tags(string token, string& tag, vector<string>& accepted_tags)
 {
 	// put every word_tag in vector words_tags
 	vector<string> words_tags;
@@ -19,9 +19,8 @@ bool collect_tags(string token, string& tags, vector<string>& accepted_tags)
 		return false;
 	
 	string word;
-	string tag = "";
+	tag = "";
 	string delimiter = "_";
-	unsigned position = 0;
 	size_t pos = 0;
 	
 	for (unsigned i=0; i<words_tags.size(); ++i)
@@ -39,9 +38,9 @@ bool collect_tags(string token, string& tags, vector<string>& accepted_tags)
 		// now words_tags[i] contains only the tag
 		if( find(accepted_tags.begin(), accepted_tags.end(), words_tags[i]) == accepted_tags.end() )
 			return false;
-		tag = words_tags[i] + " ";
+		tag = tag + words_tags[i] + " ";
 	}
-
+	tag.pop_back();
 	return true;
 }
 
@@ -56,7 +55,7 @@ bool calcul_occurrences(string large_filename,
 	string delimiter = "\t";
 	unsigned position = 0, cpt_line = 0;
 	size_t pos = 0;
-	bool good_tags;
+	bool good_tags = false;
 	
 	unsigned nb_year = 0;
 	unsigned nb_match = 0;
@@ -247,7 +246,7 @@ void calcul_handler(vector<string>& filenames, map<std::string, Data*>& tags_to_
 }
 
 bool write_output_frequences_tags_grams(const char* filename, unsigned long long total_match, 
-	unsigned long long total_volume)
+	unsigned long long total_volume, map<std::string, Data*>& tags_to_data)
 {
 	FILE* output = fopen(filename, "w");
 	if( output == NULL )
@@ -258,45 +257,38 @@ bool write_output_frequences_tags_grams(const char* filename, unsigned long long
 
 	for(auto it=tags_to_data.begin(); it != tags_to_data.end(); ++it)
 	{
-		fprintf(output, "%s\t%llu\t%llu\t%llu\t%.2f\t%.2f\t%d\t%d\t%d\t%d\t%d\t%d\n", 
-			it->first.c_str(), it->second->get_somme_year(), it->second->get_somme_nb_match(), it->second->get_somme_nb_volume(), 
-			it->second->get_mean_pondere_match(), it->second->get_mean_pondere_volume(), it->second->get_year_max(),
-			it->second->get_year_min(), it->second->get_nb_match_max(), it->second->get_nb_match_min(),
-			it->second->get_nb_volume_max(), it->second->get_nb_volume_min(), it->second->get_freq_match(total_match), it->second->get_freq_volume(total_volume) );
+		fprintf(output, 
+			"%s\t%llu\t%llu\t%llu\t%.2f\t%.2f\t%d\t%d\t%d\t%d\t%d\t%d\t%.8e\t%.8e\n", 
+			it->first.c_str(), 
+			it->second->get_somme_year(), 
+			it->second->get_somme_nb_match(), 
+			it->second->get_somme_nb_volume(), 
+			it->second->calcul_mean_pondere_match(),
+			it->second->calcul_mean_pondere_volume(), 
+			it->second->get_year_max(),
+			it->second->get_year_min(), 
+			it->second->get_nb_match_max(), 
+			it->second->get_nb_match_min(),
+			it->second->get_nb_volume_max(), 
+			it->second->get_nb_volume_min(), 
+			it->second->get_freq_match(total_match), 
+			it->second->get_freq_volume(total_volume) );
 	}	
 	
 	fclose(output);
 	return true;	
 }
 
-// calcul total occurrences and mean pondere match/volume
-void calcul_total_occurrences_mean_pondere_match_volume(
-	map<std::string, Data*>& tags_to_data, unsigned long long& total_match)
-{
-	total_match = 0;
-	for(auto it=tags_to_data.begin(); it != tags_to_data.end(); ++it)
-	{
-		total_match += it->second->get_nb_match();
-		it->second->calcul_mean_pondere_match(static_cast<float>(tags_to_data.size()));
-		it->second->calcul_mean_pondere_volume(static_cast<float>(tags_to_data.size()));
-	}
-}
+// calcul total occurrences 
+
 void calcul_total_occurrences(
 	map<std::string, Data*>& tags_to_data, unsigned long long& total_match)
 {
 	total_match = 0;
 	for(auto it=tags_to_data.begin(); it != tags_to_data.end(); ++it)
-		total_match += it->second->get_nb_match();
+		total_match += it->second->get_somme_nb_match();
 }
 
-void calcul_mean_pondere_match_volume(map<std::string, Data*>& tags_to_data)
-{
-	for(auto it=tags_to_data.begin(); it != tags_to_data.end(); ++it)
-	{
-		it->second->calcul_mean_pondere_match(static_cast<float>(tags_to_data.size()));
-		it->second->calcul_mean_pondere_volume(static_cast<float>(tags_to_data.size()));
-	}
-}
 
 void destroy_data(map<std::string, Data*>& tags_to_data)
 {
@@ -330,8 +322,8 @@ int main(int argc, char** argv)
 	calcul_handler(filenames, tags_to_data, accepted_tags);
 	
 	// Write in output file	frequences for each tags-grams
-	calcul_total_occurrences_mean_pondere_match_volume(tags_to_data, total_match);
-	write_output_frequences_tags_grams(argv[1], total_match, total_volume);
+	calcul_total_occurrences(tags_to_data, total_match);
+	write_output_frequences_tags_grams(argv[1], total_match, total_volume, tags_to_data);
 	
 	destroy_data(tags_to_data);
 	

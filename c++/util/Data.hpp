@@ -1,16 +1,12 @@
 #ifndef DATA_HPP
 #define DATA_HPP
 
-#include <mutex>
-
-// dans le main.cpp : map<std::string, DataSafe> tags_to_data;
-
-class DataSafe
+class Data
 {
 	private:
 		unsigned long somme_year = 0;
-		unsigned long somme_nb_match = 0;
-		unsigned long somme_nb_volume = 0;
+		unsigned long long somme_nb_match = 0;
+		unsigned long long somme_nb_volume = 0;
 		float mean_pondere_match = 0;
 		float mean_pondere_volume = 0;
 		unsigned year_max = 0;
@@ -19,70 +15,82 @@ class DataSafe
 		unsigned nb_match_min = 100000;
 		unsigned nb_volume_max = 0;
 		unsigned nb_volume_min = 100000;
-		
-		std::mutex _mutex;
 
 	public:
 		void add_somme_year(unsigned year)
 		{
-			std::lock_guard<std::mutex> guard(_mutex);
 			somme_year += year;
 		}
 		void add_somme_nb_match(unsigned nb_match)
 		{
-			std::lock_guard<std::mutex> guard(_mutex);
 			somme_nb_match += nb_match;
 		}
 		void add_somme_nb_volume(unsigned nb_volume)
 		{
-			std::lock_guard<std::mutex> guard(_mutex);
 			somme_nb_volume += nb_volume;
 		}
-		void add_mean_pondere_match(float mult)
+		void add_mean_pondere_match(float match)
 		{
-			std::lock_guard<std::mutex> guard(_mutex);
-			mean_pondere_match += mult;
+			mean_pondere_match += match;
 		}
-		void add_mean_pondere_volume(float mult)
+		void add_mean_pondere_volume(float volume)
 		{
-			std::lock_guard<std::mutex> guard(_mutex);
-			mean_pondere_volume += mult;
+			mean_pondere_volume += volume;
 		}
 		void try_and_change_year_max(unsigned year)
 		{
-			std::lock_guard<std::mutex> guard(_mutex);
 			if( year > year_max )
 				year_max = year;
 		}
 		void try_and_change_year_min(unsigned year)
 		{
-			std::lock_guard<std::mutex> guard(_mutex);
 			if( year < year_min )
 				year_min = year;
 		}
 		void try_and_change_match_max(unsigned nb_match)
 		{
-			std::lock_guard<std::mutex> guard(_mutex);
 			if( nb_match > nb_match_max )
 				nb_match_max = nb_match;
 		}
 		void try_and_change_match_min(unsigned nb_match)
 		{
-			std::lock_guard<std::mutex> guard(_mutex);
 			if( nb_match < nb_match_min )
 				nb_match_min = nb_match;
 		}
 		void try_and_change_volume_max(unsigned nb_volume)
 		{
-			std::lock_guard<std::mutex> guard(_mutex);
 			if( nb_volume > nb_volume_max )
 				nb_volume_max = nb_volume;
 		}
 		void try_and_change_volume_min(unsigned nb_volume)
 		{
-			std::lock_guard<std::mutex> guard(_mutex);
 			if( nb_volume < nb_volume_min )
 				nb_volume_min = nb_volume;
+		}
+		
+		void calcul_mean_pondere_match(float total)
+		{
+			mean_pondere_match = mean_pondere_match / total;
+		}
+		
+		void calcul_mean_pondere_volume(float total)
+		{
+			mean_pondere_volume = mean_pondere_volume / total;
+		}
+		
+		unsigned long long get_nb_match()
+		{
+			return somme_nb_match;
+		}
+		
+		float get_freq_match(unsigned long long total_match)
+		{
+			return somme_nb_match / (total_match*0.1);
+		}
+		
+		float get_freq_volume(unsigned long long total_volume)
+		{
+			return somme_nb_volume / (total_volume*0.1);
 		}
 };
 

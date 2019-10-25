@@ -56,10 +56,10 @@ bool calcul_freq(string large_filename, const char* path_to_output,
 			else if(position == 4)
 				freq_volume = stoi( token ) / (total_volume*0.1);
 		}
-		/* si on retire le dernier \t alors on décommente
+		/* si on retire le dernier \t alors on décommente*/
 		if( line != "" )
 			++ position;
-		*/
+		
 		if( position != 12 )
 		{
 			cout << "WARNING bad line (" << cpt_line 
@@ -70,7 +70,7 @@ bool calcul_freq(string large_filename, const char* path_to_output,
 		else
 		{
 			// warning : write "%s\t%.10e\t%.10e\n" if we fix the _treated files (\t in last position)
-			fprintf(output, "%s%.8e\t%.8e\n", strtok(buffer, "\n"), freq_match, freq_volume);
+			fprintf(output, "%s\t%.8e\t%.8e\n", strtok(buffer, "\n"), freq_match, freq_volume);
 		}
 		memset(buffer, 0, sizeof(buffer));
 	}

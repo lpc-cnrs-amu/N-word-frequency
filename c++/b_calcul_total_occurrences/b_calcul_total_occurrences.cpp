@@ -45,10 +45,10 @@ bool calcul_occurrences(string large_filename, unsigned long long& total_match)
 				total_match += stoi( token );
 			}
 		}
-		/*
+		
 		if( line != "" )
 			++ position;
-		*/
+		
 		if( position != 12 )
 		{
 			cout << "WARNING bad line (" << cpt_line 

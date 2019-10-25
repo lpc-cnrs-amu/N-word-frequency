@@ -94,6 +94,8 @@ void generate_file(unsigned thread_id, QueueSafe<string>& queue_filenames,
 					if( valid_line(token.str(), word_tag, year, nb_match, 
 						nb_volume, forbidden_characters, accepted_tags) )
 					{		
+						one_valid_line = true;
+						
 						// find a new ngram so we write the precedent (except for the 1st line of the file)
 						if(word_tag != precedent_word_tag && precedent_word_tag != "")
 						{

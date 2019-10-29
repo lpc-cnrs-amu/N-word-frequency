@@ -16,24 +16,24 @@ void generate_file(unsigned thread_id, QueueSafe<string>& queue_filenames,
 	unsigned char buffer[CHUNK_SIZE];
 	unsigned int unzipped_bytes = 1;
 	string word_tag;
-	string precedent_word_tag = "";
+	string precedent_word_tag;
 	stringstream token("");
 	unsigned year, nb_match, nb_volume;
 	int err;
 	
 	// for the operations on the lines
-	unsigned somme_year = 0;
-	unsigned somme_nb_match = 0;
-	unsigned somme_nb_volume = 0;
-	float mean_pondere_match = 0;
-	float mean_pondere_volume = 0; 
-	unsigned year_max = 0;
-	unsigned year_min = 3000;
-	unsigned nb_match_max = 0;
-	unsigned nb_match_min = 100000;
-	unsigned nb_volume_max = 0;
-	unsigned nb_volume_min = 100000;
-	bool one_valid_line = false;
+	unsigned somme_year;
+	unsigned somme_nb_match;
+	unsigned somme_nb_volume;
+	float mean_pondere_match;
+	float mean_pondere_volume; 
+	unsigned year_max;
+	unsigned year_min;
+	unsigned nb_match_max;
+	unsigned nb_match_min;
+	unsigned nb_volume_max;
+	unsigned nb_volume_min;
+	bool one_valid_line;
 	
 	string large_filename;
 	while( !queue_filenames.empty() )
@@ -54,7 +54,23 @@ void generate_file(unsigned thread_id, QueueSafe<string>& queue_filenames,
 		FILE* output = get_file(thread_id, large_filename, path_to_output, ".gz", "_treated");
 		if( output == NULL )
 			break;
-								
+
+		somme_year = 0;
+		somme_nb_match = 0;
+		somme_nb_volume = 0;
+		mean_pondere_match = 0;
+		mean_pondere_volume = 0; 
+		year_max = 0;
+		year_min = 3000;
+		nb_match_max = 0;
+		nb_match_min = 100000;
+		nb_volume_max = 0;
+		nb_volume_min = 100000;			
+		token.str(std::string());
+		token.clear();
+		one_valid_line = false;
+		precedent_word_tag = "";
+		
 		while(1)
 		{
 			memset(buffer, 0, sizeof(buffer));

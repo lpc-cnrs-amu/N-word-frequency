@@ -20,11 +20,11 @@ void calcul_freq(unsigned thread_id, QueueSafe<string>& queue_filenames,
 	string token;
 	string delimiter = "\t";
 	string large_filename;
-	unsigned position = 0;
-	unsigned cpt_line = 0;
-	float freq_match = 0;
-	float freq_volume = 0;
-	size_t pos = 0;
+	unsigned position;
+	unsigned cpt_line;
+	float freq_match;
+	float freq_volume;
+	size_t pos;
 			
 	while( !queue_filenames.empty() )
 	{
@@ -48,6 +48,8 @@ void calcul_freq(unsigned thread_id, QueueSafe<string>& queue_filenames,
 			break;
 		}
 		
+		freq_match = 0;
+		freq_volume = 0;		
 		cpt_line = 0;		
 		while( fgets(buffer, sizeof(buffer), input) )
 		{
@@ -68,7 +70,6 @@ void calcul_freq(unsigned thread_id, QueueSafe<string>& queue_filenames,
 				else if(position == 4)
 					freq_volume = stoi( token ) / (total_volume*0.1);
 			}
-			/* si on retire le dernier \t alors on décommente*/
 			if( line != "" )
 				++ position;
 			
@@ -81,7 +82,6 @@ void calcul_freq(unsigned thread_id, QueueSafe<string>& queue_filenames,
 			}
 			else
 			{
-				// warning : write "%s\t%.10e\t%.10e\n" if we fix the _treated files (\t in last position)
 				fprintf(output, "%s\t%.8e\t%.8e\n", strtok(buffer, "\n"), freq_match, freq_volume);
 			}
 			memset(buffer, 0, sizeof(buffer));
@@ -131,7 +131,7 @@ int main(int argc, char** argv)
 	collect_filenames(queue_filenames, argv[2], "_treated");
 	for(unsigned i=0; i<nb_cores; ++i)
 	{
-		cout << "create thread " << i+1 << endl;
+		//cout << "create thread " << i+1 << endl;
 		threads.emplace_back( [&]{calcul_freq( i+1, queue_filenames, argv[3], total_match, total_volume ); } );
 	}
 	for(auto& t: threads)

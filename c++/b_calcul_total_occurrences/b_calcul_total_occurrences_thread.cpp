@@ -19,9 +19,11 @@ void calcul_occurrences(unsigned thread_id, QueueSafe<string>& queue_filenames,
 	string token;
 	string delimiter = "\t";
 	string large_filename;
-	unsigned position = 0;
-	unsigned cpt_line = 0;
-	size_t pos = 0;
+	unsigned position;
+	unsigned cpt_line;
+	unsigned long long total_match;
+	unsigned match;
+	size_t pos;
 			
 	while( !queue_filenames.empty() )
 	{
@@ -36,6 +38,8 @@ void calcul_occurrences(unsigned thread_id, QueueSafe<string>& queue_filenames,
 		}
 		print_ok_safe(print_mutex, thread_id, "start", large_filename);
 		
+		total_match = 0;
+		match = 0;
 		cpt_line = 0;				
 		while( fgets(buffer, sizeof(buffer), input) )
 		{
@@ -52,12 +56,10 @@ void calcul_occurrences(unsigned thread_id, QueueSafe<string>& queue_filenames,
 				line.erase(0, pos + delimiter.length());
 			
 				if(position == 3)
-					occurrences.add_match( stoi( token ) );
+					match = stoi( token );
 			}
-			/*
 			if( line != "" )
 				++ position;
-			*/
 			if( position != 12 )
 			{
 				cout << "WARNING bad line (" << cpt_line 
@@ -65,9 +67,13 @@ void calcul_occurrences(unsigned thread_id, QueueSafe<string>& queue_filenames,
 				cerr << "WARNING bad line (" << cpt_line 
 					 << ") on file " << large_filename << " : " << buffer << "\n";
 			}
+			else
+			{
+				total_match += match;
+			}
 			memset(buffer, 0, sizeof(buffer));
 		}
-		
+		occurrences.add_match( total_match );
 		fclose(input);
 		print_ok_safe(print_mutex, thread_id, "finish", large_filename);
 	}
@@ -164,7 +170,7 @@ int main(int argc, char** argv)
 	collect_filenames(queue_filenames, argv[3], "_treated");
 	for(unsigned i=0; i<nb_cores; ++i)
 	{
-		cout << "create thread " << i+1 << endl;
+		//cout << "create thread " << i+1 << endl;
 		threads.emplace_back( [&]{calcul_occurrences( i+1, queue_filenames, occurrences ); } );
 	}
 	for(auto& t: threads)

@@ -16,6 +16,7 @@ bool calcul_occurrences(string large_filename, unsigned long long& total_match)
 	string delimiter = "\t";
 	unsigned position = 0, cpt_line = 0;
 	size_t pos = 0;
+	unsigned match = 0;
 			
 	FILE* input = fopen(large_filename.c_str(), "r");
 	if( input == NULL )
@@ -42,7 +43,7 @@ bool calcul_occurrences(string large_filename, unsigned long long& total_match)
 		
 			if(position == 3)
 			{
-				total_match += stoi( token );
+				match = stoi( token );
 			}
 		}
 		
@@ -52,9 +53,13 @@ bool calcul_occurrences(string large_filename, unsigned long long& total_match)
 		if( position != 12 )
 		{
 			cout << "WARNING bad line (" << cpt_line 
-				 << ") on file " << large_filename << " : " << buffer << "\n";
+				 << ") on file " << large_filename << " : [" << buffer << "]\n";
 			cerr << "WARNING bad line (" << cpt_line 
-				 << ") on file " << large_filename << " : " << buffer << "\n";
+				 << ") on file " << large_filename << " : [" << buffer << "]\n";
+		}
+		else
+		{
+			total_match += match;
 		}
 		memset(buffer, 0, sizeof(buffer));
 	}

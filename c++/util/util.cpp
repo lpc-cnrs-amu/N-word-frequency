@@ -111,15 +111,10 @@ FILE* get_file(int thread_id, string filename,
 	if( output == NULL )
 		print_message("Impossible to open the file ", filename);
 	
-	if(thread_id != -1)
-	{
-		cout << "\tThread " << thread_id << " : " << filename << "\n";
-		cerr << "\tThread " << thread_id << " : " << filename << "\n";
-	}
-	else
+	if(thread_id == -1)
 	{
 		cout << "\tDoing : " << filename << "\n";
-		cerr << "\tDoing : " << filename << "\n";		
+		cerr << "\tDoing : " << filename << "\n";
 	}
 	return output;
 }

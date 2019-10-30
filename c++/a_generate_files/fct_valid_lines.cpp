@@ -4,16 +4,17 @@
 using namespace std;
 
 /*! \brief Puts each word_tag from a ngram in a vector. 
- *	Used in valid_word_tag().
+ *	Used in valid_ngram().
  *
- * \param ngram The ngram to treat, ex : Aaron_NOUN represented_VERB the_DET Lord_NOUN
+ * \param ngram The ngram to treat, 
+ * ex : Aaron_NOUN represented_VERB the_DET Lord_NOUN
  * \param words_tags The vector to fill with word_tag
  */
 void collect_words_tags(string ngram, vector<string>& words_tags)
 {
 	string delimiter = " ";
 	size_t pos = 0;
-	while ((pos = ngram.find(delimiter)) != std::string::npos) 
+	while ( (pos = ngram.find(delimiter)) != std::string::npos ) 
 	{
 		words_tags.push_back(ngram.substr(0, pos));
 		ngram.erase(0, pos + delimiter.length());	
@@ -22,13 +23,17 @@ void collect_words_tags(string ngram, vector<string>& words_tags)
 		words_tags.push_back(ngram);
 }
 
-/*! \brief Says if a ngram is valid or not.
+/*! \brief Says if a ngram is valid or not. Used in valid_line().
  *
- * A ngram is valid if all words are correctly tagged and all words are correct, and if there is n words.
+ * A ngram is valid if all words are correctly tagged and all words are 
+ * correct, and if there is "nb_ngram" words.
  * 
- * \param ngram The ngram to treat, ex : Aaron_NOUN represented_VERB the_DET Lord_NOUN
- * \param forbidden_characters Vector containing forbidden words in case of bad tagging
+ * \param ngram The ngram to treat, 
+ * ex : Aaron_NOUN represented_VERB the_DET Lord_NOUN
+ * \param forbidden_characters Vector containing forbidden words in 
+ * case of bad tagging
  * \param accepted_tags Vector containing the accepted tags
+ * \param nb_ngram Number of word_tag you want
  * \return True if the ngram is valid, else false.
  */
 bool valid_ngram(string ngram, vector<string>& forbidden_characters, vector<string>& accepted_tags, unsigned nb_ngram)
@@ -36,7 +41,7 @@ bool valid_ngram(string ngram, vector<string>& forbidden_characters, vector<stri
 	vector<string> words_tags;
 	collect_words_tags(ngram, words_tags);
 	
-	if(words_tags.size() != nb_ngram)
+	if( words_tags.size() != nb_ngram )
 		return false;
 		
 	string word;
@@ -45,10 +50,10 @@ bool valid_ngram(string ngram, vector<string>& forbidden_characters, vector<stri
 	size_t pos = 0;
 	for (unsigned i=0; i<words_tags.size(); ++i)
 	{		
-		if (words_tags[i].find(delimiter) == std::string::npos)
+		if ( words_tags[i].find(delimiter) == std::string::npos )
 			return false;
 		
-		while ((pos = words_tags[i].find(delimiter)) != std::string::npos)
+		while ( (pos = words_tags[i].find(delimiter)) != std::string::npos )
 		{
 			word = words_tags[i].substr(0, pos);
 			words_tags[i].erase(0, pos + delimiter.length());
@@ -72,13 +77,13 @@ bool valid_ngram(string ngram, vector<string>& forbidden_characters, vector<stri
  * 
  * \param line The line to treat, ex : 
  * \param ngram The ngram to fill
- * \param year
- * \param nb_match
- * \param nb_volume
+ * \param year The year to fill
+ * \param nb_match The occurrence to fill
+ * \param nb_volume The number of volume to fill
  * \param forbidden_characters Vector containing forbidden words in case of bad tagging
  * \param accepted_tags Vector containing the accepted tags
- * \param nb_ngram 
- * \param min_year_defined 
+ * \param nb_ngram Number of word_tag you want
+ * \param min_year_defined The minimum year you want
  * \return True if the line is valid, else false.
  */
 bool valid_line(string line, string& ngram, 

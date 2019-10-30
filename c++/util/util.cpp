@@ -2,6 +2,7 @@
 
 using namespace std;
 
+
 bool has_suffix(const char* name, string &suffix)
 {
 	string str = name;

@@ -41,14 +41,13 @@ void collect_filenames(QueueSafe<string>& queue_filenames, const char* path_to_f
     }
     closedir (pdir);	
 }
-void collect_filenames(vector<string>& filenames, const char* path_to_files, string suffix)
+void collect_filenames(vector<string>& filenames, string& path_to_files, string suffix)
 {
 	DIR *pdir = NULL; //pointeur vers un dossier
     struct dirent *pent = NULL; //structure nécessaire a la lecture de répertoire, elle contiendra le nom du/des fichier
-    string path_to_files_str(path_to_files);
     string filename("");
                                            
-    pdir = opendir (path_to_files); 
+    pdir = opendir (path_to_files.c_str()); 
                                            
     if (pdir == NULL) //si il y a eu un problème pour l'ouverture du répertoire
     {
@@ -66,7 +65,7 @@ void collect_filenames(vector<string>& filenames, const char* path_to_files, str
         if(	pent->d_name != NULL && has_suffix(pent->d_name, suffix) )
         {
 			filename = pent->d_name;
-			filename = path_to_files_str + filename;
+			filename = path_to_files + filename;
 			filenames.push_back(filename);
 		}
     }
@@ -90,11 +89,10 @@ void print_message(string message, string cut_filename)
 }
 
 FILE* get_file(int thread_id, string filename, 
-	const char* path_directory, string filename_end, string new_filename_end)
+	string& path_directory, string filename_end, string new_filename_end)
 {	
 	// concat large_filename + num_cut_files
 	string delimiter = "/";
-	string path_directory_str(path_directory);
 	size_t pos = 0;
 	while ((pos = filename.find(delimiter)) != std::string::npos) 
 		filename.erase(0, pos + delimiter.length());
@@ -103,7 +101,7 @@ FILE* get_file(int thread_id, string filename,
 	if (pos != std::string::npos)
 		filename.erase(pos, filename.length());		
 	filename += new_filename_end;
-	filename = path_directory_str + filename; 
+	filename = path_directory + filename; 
 	
 	cout << filename << endl;
 

@@ -117,7 +117,6 @@ FILE* get_file(int thread_id, string filename,
 	return output;
 }
 
-
 void print_message_safe(mutex& print_mutex, unsigned thread_id, string message, string filename)
 {
 	lock_guard<mutex> guard(print_mutex);
@@ -182,5 +181,43 @@ bool get_total_occurrences(const char* filename,
 		return false;
 	}
 	fclose(file);
+	return true;	
+}
+
+bool get_total_volume(const char* filename,
+	unsigned long long& total_volume, unsigned min_year_defined)
+{
+	ifstream file(filename);
+	if( !file )
+	{
+		cout << "Cannot open file "<< filename << endl;
+		return false;
+	}
+	char tab;
+	unsigned year;
+	unsigned long long nb_1gram, nb_pages, nb_volumes;
+	total_volume = 0;
+	
+	file.get(tab); // read the first space
+	file.get(tab);
+	while( tab == '\t'  )
+	{
+		if (file >> year)
+		{
+			file.get(tab);
+			file >> nb_1gram;
+			file.get(tab);
+			file >> nb_pages;
+			file.get(tab);
+			file >> nb_volumes;
+			if( year >= min_year_defined )
+				total_volume += nb_volumes;
+			file.get(tab);
+		}
+		else
+			tab = ' ';
+	}
+	
+	file.close();	
 	return true;	
 }

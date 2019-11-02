@@ -1,23 +1,11 @@
-#include "../util/util.hpp"
-#include "../util/OccurrencesSafe.hpp"
-
-#define LINE_SIZE 1024
-#define NB_NGRAM 4
-#define YEAR 1970
+#include "fct_calcul_total_occurrences.hpp"
 
 using namespace std;
 using namespace std::chrono;
 
-bool calcul_occurrences(string large_filename, unsigned long long& total_match)
-{	
-	char buffer[LINE_SIZE];
-	string line;
-	string token;
-	string delimiter = "\t";
-	unsigned position = 0, cpt_line = 0;
-	size_t pos = 0;
-	unsigned match = 0;
-			
+bool calcul_occurrences(string large_filename, 
+	unsigned long long& total_match, unsigned nb_ngrams, unsigned min_year_defined)
+{			
 	FILE* input = fopen(large_filename.c_str(), "r");
 	if( input == NULL )
 	{
@@ -26,85 +14,12 @@ bool calcul_occurrences(string large_filename, unsigned long long& total_match)
 	}
 	print_message("start", large_filename);
 							
-	while( fgets(buffer, sizeof(buffer), input) )
-	{
-		++cpt_line;
-		line = buffer;
-		position = 0;
-		pos = 0;
-		//cout << buffer << endl;
-					
-		// cut by \t
-		while ((pos = line.find(delimiter)) != std::string::npos) 
-		{
-			++ position;
-			token = line.substr(0, pos);
-			line.erase(0, pos + delimiter.length());
-		
-			if(position == 3)
-			{
-				match = stoi( token );
-			}
-		}
-		
-		if( line != "" )
-			++ position;
-		
-		if( position != 12 )
-		{
-			cout << "WARNING bad line (" << cpt_line 
-				 << ") on file " << large_filename << " : [" << buffer << "]\n";
-			cerr << "WARNING bad line (" << cpt_line 
-				 << ") on file " << large_filename << " : [" << buffer << "]\n";
-		}
-		else
-		{
-			total_match += match;
-		}
-		memset(buffer, 0, sizeof(buffer));
-	}
+	treat_occurrences(input, large_filename, total_match, nb_ngrams, min_year_defined);
+	
 	fclose(input);
 	print_message("finish", large_filename);
 	return true;
 	
-}
-
-bool get_total_volume(const char* filename,
-	unsigned long long& total_volume)
-{
-	ifstream file(filename);
-	if( !file )
-	{
-		cout << "Cannot open file "<< filename << endl;
-		return false;
-	}
-	char tab;
-	unsigned year;
-	unsigned long long nb_1gram, nb_pages, nb_volumes;
-	total_volume = 0;
-	
-	file.get(tab); // read the first space
-	file.get(tab);
-	while( tab == '\t'  )
-	{
-		if (file >> year)
-		{
-			file.get(tab);
-			file >> nb_1gram;
-			file.get(tab);
-			file >> nb_pages;
-			file.get(tab);
-			file >> nb_volumes;
-			if( year >= YEAR )
-				total_volume += nb_volumes;
-			file.get(tab);
-		}
-		else
-			tab = ' ';
-	}
-	
-	file.close();	
-	return true;	
 }
 
 void print_usage(const char* exename)
@@ -123,60 +38,59 @@ void print_usage(const char* exename)
     fprintf(stderr, "\t chemin_fichiers_treated\n\t\tLe chemin pour accéder aux fichier _treated.\n\n");
 }
 
-bool write_output(const char* filename, unsigned long long total_match, 
-	unsigned long long total_volume)
-{
-	FILE* output = fopen(filename, "w");
-	if( output == NULL )
-	{
-		print_message("Cannot open file ", filename);
-		return false;
-	}
-	fprintf(output, "Total match\tTotal volume\n%llu\t%llu\n", 
-		total_match, total_volume);
-	fclose(output);
-	return true;
-}
-
-void calcul_handler(vector<string>& filenames, unsigned long long& total_match)
+void calcul_handler(vector<string>& filenames, 
+	unsigned long long& total_match, unsigned nb_ngrams, unsigned min_year_defined)
 {
 	for(unsigned i=0; i<filenames.size(); ++i)
-	{
-		if( !calcul_occurrences(filenames[i], total_match) )
-		{
-			cout << "didn't process the file " << filenames[i] << "\n";
+		if( !calcul_occurrences(filenames[i], total_match, nb_ngrams, min_year_defined) )
 			cerr << "didn't process the file " << filenames[i] << "\n";
-		}
-	}
 }
 
 int main(int argc, char** argv)
 {
 	// print usage if the user has written the command incorrectly
-	if( argc != 4 || (argc > 1 && !strcmp(argv[1],"-h")) )
+	if( argc > 2 || (argc > 1 && !strcmp(argv[1],"-h")) )
 	{
 		print_usage(argv[0]);
 		return 0;
 	}
 	auto start = high_resolution_clock::now();
 	
+	// Read ini file to find args
+	string output_file_name, totalcount_file, path_to_treated_files;
+	unsigned nb_ngrams, min_year_defined;
+	const char* ini_filename = argv[0];
+	if( argc <= 1 )
+		ini_filename = NULL;
+	if( read_ini_file(ini_filename, output_file_name, totalcount_file, 
+		path_to_treated_files, nb_ngrams, min_year_defined) )
+	{
+		cout << output_file_name << endl;
+		cout << totalcount_file << endl;
+		cout << path_to_treated_files << endl;
+		cout << nb_ngrams << endl;
+		cout << min_year_defined << endl;
+	}
+	else
+		return 0;
+	
 	// Calculate the total nb of volumes with the totalcount file
-	unsigned long long total_volume, total_match = 0;
-	get_total_volume(argv[2], total_volume);
+	unsigned long long total_volume;
+	get_total_volume(totalcount_file.c_str(), total_volume, min_year_defined);
 	
 	// Calculate the total nb of occurrences with treated files
 	vector<string> filenames;
-	collect_filenames(filenames, argv[3], "_treated");
-	calcul_handler(filenames, total_match);
+	unsigned long long total_match = 0;
+	collect_filenames(filenames, path_to_treated_files, "_treated");
+	calcul_handler(filenames, total_match, nb_ngrams, min_year_defined);
 	
-	// Write in output file	
-	write_output(argv[1], total_match, total_volume);
+	// Write in output file
+	write_output(output_file_name.c_str(), total_match, total_volume);
 	
 	// Calcul time taken
 	auto stop = high_resolution_clock::now(); 
 	auto duration = duration_cast<std::chrono::minutes>(stop - start);
-	cout << "Time taken : " << endl;
-	cout << duration.count() << " minutes" << endl;
+	cout << "Time taken : " << duration.count() << " minutes" << endl;
 	
     return 0;
 }

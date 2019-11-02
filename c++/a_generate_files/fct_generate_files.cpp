@@ -58,7 +58,6 @@ bool read_ini_file(const char* ini_filename, string& path_to_gz,
 	
 	if( !file_ini )
 	{
-		cout << "Impossible to open the ini file or didn't find it\n";
 		cerr << "Impossible to open the ini file or didn't find it\n";
 		return false;
 	}

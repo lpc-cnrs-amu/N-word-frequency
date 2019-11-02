@@ -44,5 +44,8 @@ void print_message_safe(std::mutex& print_mutex, unsigned thread_id, std::string
 
 bool get_total_occurrences(const char* filename, unsigned long long& total_match,
 	unsigned long long& total_volume);
+	
+bool get_total_volume(const char* filename,
+	unsigned long long& total_volume, unsigned min_year_defined);
 
 #endif

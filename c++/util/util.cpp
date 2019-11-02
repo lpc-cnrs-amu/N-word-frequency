@@ -3,21 +3,20 @@
 using namespace std;
 
 
-bool has_suffix(const char* name, string &suffix)
+bool has_suffix(const char* name, string& suffix)
 {
 	string str = name;
     return str.size() >= suffix.size() &&
            str.compare(str.size() - suffix.size(), suffix.size(), suffix) == 0;
 }
 
-void collect_filenames(QueueSafe<string>& queue_filenames, const char* path_to_files, string suffix)
+void collect_filenames(QueueSafe<string>& queue_filenames, string& path_to_files, string suffix)
 {
 	DIR *pdir = NULL; //pointeur vers un dossier
     struct dirent *pent = NULL; //structure nécessaire a la lecture de répertoire, elle contiendra le nom du/des fichier
-    string path_to_files_str(path_to_files);
     string filename("");
                                            
-    pdir = opendir (path_to_files); 
+    pdir = opendir (path_to_files.c_str()); 
                                            
     if (pdir == NULL) //si il y a eu un problème pour l'ouverture du répertoire
     {
@@ -35,7 +34,7 @@ void collect_filenames(QueueSafe<string>& queue_filenames, const char* path_to_f
         if(	pent->d_name != NULL && has_suffix(pent->d_name, suffix) )
         {
 			filename = pent->d_name;
-			filename = path_to_files_str + filename;
+			filename = path_to_files + filename;
 			queue_filenames.push_front(filename);
 		}
     }
@@ -77,7 +76,7 @@ void print_filenames(vector<string>& filenames)
 		cout << filenames[i] << endl;
 }
 
-void print_message(string message, char* cut_filename)
+void print_message(string message, const char* cut_filename)
 {
 	cout << message << cut_filename << "\n";
 	cerr << message << cut_filename << "\n";
@@ -119,14 +118,47 @@ FILE* get_file(int thread_id, string filename,
 }
 
 
-void print_ok_safe(mutex& print_mutex, unsigned thread_id, string message, string filename)
+void print_message_safe(mutex& print_mutex, unsigned thread_id, string message, string filename)
 {
 	lock_guard<mutex> guard(print_mutex);
 	cout << "Thread " << thread_id << " " << message << " " << filename << "\n";
 	cerr << "Thread " << thread_id << " " << message << " " << filename << "\n";
 }
 
+void print_message_safe(mutex& print_mutex, unsigned thread_id, string message, const char* m)
+{
+	lock_guard<mutex> guard(print_mutex);
+	cout << "Thread " << thread_id << " " << message << " " << m << "\n";
+	cerr << "Thread " << thread_id << " " << message << " " << m << "\n";
+}
 
+bool is_number(const string& s)
+{
+    return !s.empty() && std::find_if(s.begin(), 
+        s.end(), [](char c) { return !std::isdigit(c); }) == s.end();
+}
+
+bool valid_min_year(const string& year)
+{
+	if( is_number(year) )
+		return stoi(year) >= 0 and stoi(year) < 2009;
+	return false;
+}
+
+bool valid_nb_ngram(const string& nb_ngram)
+{
+	if( is_number(nb_ngram) )
+		return stoul(nb_ngram) > 0 and stoul(nb_ngram) < 6;
+	return false;
+}
+
+void init_arg(ifstream& file_ini, string& line, string& arg)
+{
+	file_ini >> line;
+	if( line == "=" )
+		file_ini >> line;
+	arg = line;
+}
 
 bool get_total_occurrences(const char* filename, 
 	unsigned long long& total_match,

@@ -1,22 +1,23 @@
-#include "../util/util.hpp"
 #include "../zlib1211/zlib.h"
 #include "fct_valid_lines.hpp"
+#include "fct_generate_files.hpp"
 
-//#define CHUNK_SIZE 1048576
 #define CHUNK_SIZE 1024
 
 using namespace std;
 using namespace std::chrono;
 
+mutex print_mutex;
 
 void generate_file(unsigned thread_id, QueueSafe<string>& queue_filenames, 
-	const char* path_to_output, vector<string>& forbidden_characters, vector<string>& accepted_tags)
+	string& path_to_output, vector<string>& forbidden_characters, 
+	vector<string>& accepted_tags, unsigned nb_ngrams, unsigned min_year_defined)
 {	
 	// to treat the lines
 	unsigned char buffer[CHUNK_SIZE];
 	unsigned int unzipped_bytes = 1;
-	string word_tag;
-	string precedent_word_tag;
+	string ngram;
+	string precedent_ngram;
 	stringstream token("");
 	unsigned year, nb_match, nb_volume;
 	int err;
@@ -46,7 +47,7 @@ void generate_file(unsigned thread_id, QueueSafe<string>& queue_filenames,
 		gzFile large_file = gzopen(large_filename.c_str(), "rb");
 		if( large_file == NULL )
 		{
-			print_message("Impossible to open the file ", large_filename);
+			print_message_safe(print_mutex, thread_id, "Impossible to open the file", large_filename);
 			break;	
 		}
 			
@@ -69,7 +70,7 @@ void generate_file(unsigned thread_id, QueueSafe<string>& queue_filenames,
 		token.str(std::string());
 		token.clear();
 		one_valid_line = false;
-		precedent_word_tag = "";
+		precedent_ngram = "";
 		
 		while(1)
 		{
@@ -81,19 +82,14 @@ void generate_file(unsigned thread_id, QueueSafe<string>& queue_filenames,
 			{
 				// ... because of end of file
 				if (gzeof (large_file))
-				{
-					//cout << "Thread " << thread_id << " finish " << large_filename << "\n";
 					break;
-				}
 				// ... because of an error
 				else 
 				{
-					const char * error_string;
-					error_string = gzerror (large_file, &err);
+					const char * error_string = gzerror (large_file, &err);
 					if (err) 
 					{
-						fprintf (stderr, "On %s : Error : %s.\n", 
-							large_filename.c_str(), error_string);
+						print_message_safe(print_mutex, thread_id, "Error", error_string);
 						break;
 					}
 				}
@@ -103,60 +99,19 @@ void generate_file(unsigned thread_id, QueueSafe<string>& queue_filenames,
 			{
 				if( buffer[i] != '\n' )
 					token << buffer[i];
-					
-				// find a line
 				else
 				{
-					if( valid_line(token.str(), word_tag, year, nb_match, 
-						nb_volume, forbidden_characters, accepted_tags) )
+					if( valid_line(token.str(), ngram, year, nb_match, 
+						nb_volume, forbidden_characters, accepted_tags,
+						nb_ngrams, min_year_defined) )
 					{		
 						one_valid_line = true;
-						
-						// find a new ngram so we write the precedent (except for the 1st line of the file)
-						if(word_tag != precedent_word_tag && precedent_word_tag != "")
-						{
-							fprintf(output, "%s\t%d\t%d\t%d\t%.2f\t%.2f\t%d\t%d\t%d\t %d\t%d\t%d\n", 
-								precedent_word_tag.c_str(), somme_year, somme_nb_match, somme_nb_volume, 
-								mean_pondere_match/static_cast<float>(somme_nb_match), mean_pondere_volume/static_cast<float>(somme_nb_volume), 
-								year_max, year_min, nb_match_max, nb_match_min, nb_volume_max, nb_volume_min);
-								
-							somme_year = 1;
-							somme_nb_match = nb_match;
-							somme_nb_volume = nb_volume;
-							mean_pondere_match = year * nb_match;
-							mean_pondere_volume = year * nb_volume; 
-							year_max = year;
-							year_min = year;
-							nb_match_max = nb_match;
-							nb_match_min = nb_match;
-							nb_volume_max = nb_volume;
-							nb_volume_min = nb_volume;					
-						}
-						// find the same ngram as the precedent
-						else
-						{
-							++ somme_year;
-							somme_nb_match += nb_match;
-							somme_nb_volume += nb_volume;
-							mean_pondere_match = mean_pondere_match + year * nb_match;
-							mean_pondere_volume = mean_pondere_volume + year * nb_volume;
-							if( year > year_max )
-								year_max = year;
-							if( year < year_min )
-								year_min = year;
-
-							if( nb_match > nb_match_max )
-								nb_match_max = nb_match;
-							if( nb_match < nb_match_min )
-								nb_match_min = nb_match;
-								
-							if( nb_volume > nb_volume_max )
-								nb_volume_max = nb_volume;
-							if( nb_volume < nb_volume_min )
-								nb_volume_min = nb_volume;
-						}
-							
-						precedent_word_tag = word_tag;
+						treat_line(output, ngram, precedent_ngram, somme_year,
+							somme_nb_match, somme_nb_volume, mean_pondere_match,
+							mean_pondere_volume, year_max, year_min,
+							nb_match_max, nb_match_min, nb_volume_max,
+							nb_volume_min, year, nb_match, nb_volume);
+						precedent_ngram = ngram;
 						
 					}
 					token.str(std::string());
@@ -164,73 +119,78 @@ void generate_file(unsigned thread_id, QueueSafe<string>& queue_filenames,
 				}
 			}
 		}
-		bool not_empty = static_cast<bool>(token >> word_tag);
-		if(not_empty)
+		if( one_valid_line && !file_not_entirely_read(token) )
 		{
-			cout << "WARNING -- didn't read the entire file " 
-				 << large_filename << " : has left :[" 
-				 << word_tag <<"]\n"; 
-			cerr << "WARNING -- didn't read the entire file " 
-				 << large_filename << " : has left :[" 
-				 << word_tag <<"]\n";
-		}
-		
-		// write the last treated line
-		else
-		{
-			if(one_valid_line)
-			{
-				fprintf(output, "%s\t%d\t%d\t%d\t%.2f\t%.2f\t%d\t%d\t%d\t %d\t%d\t%d\n", 
-					word_tag.c_str(), somme_year, somme_nb_match, somme_nb_volume, 
-					mean_pondere_match/static_cast<float>(somme_nb_match), mean_pondere_volume/static_cast<float>(somme_nb_volume), 
-					year_max, year_min, nb_match_max, nb_match_min, nb_volume_max, nb_volume_min);
-			}
+			fprintf(output, 
+				"%s\t%d\t%d\t%d\t%.2f\t%.2f\t%d\t%d\t%d\t%d\t%d\t%d\n", 
+				ngram.c_str(), somme_year, somme_nb_match, somme_nb_volume, 
+				mean_pondere_match/static_cast<float>(somme_nb_match), 
+				mean_pondere_volume/static_cast<float>(somme_nb_volume), 
+				year_max, year_min, nb_match_max, nb_match_min, 
+				nb_volume_max, nb_volume_min);
 		}
 		gzclose(large_file);
 		fclose(output);
-		cout << "Thread " << thread_id << " finish " << large_filename << "\n";
-		cerr << "Thread " << thread_id << " finish " << large_filename << "\n";
-		/*
-		int supp = remove( large_filename );
-		if( supp != 0 )
-		{
-			cout << "Error deleting " << large_filename << "\n";
-			cerr << "Error deleting " << large_filename << "\n"; 
-		}
-		else
-		{
-			cout << "Delete " << large_filename << "\n";
-			cerr << "Delete " << large_filename << "\n"; 		
-		}
-		*/
+		print_message_safe(print_mutex, thread_id, "finish", large_filename);
 	}
 }
 
+/*! \brief Print usage of the program
+ * 
+ * \param exename Name of the executable
+ */
 void print_usage(const char* exename)
 {
-    fprintf(stderr, "NOM \n");
-    fprintf(stderr, "\t%s - Génère des fichiers de ngrams traités.\n\n", exename);
+    fprintf(stderr, "NAME \n");
+    fprintf(stderr, 
+	"\t%s - Generate treated ngrams files with threads.\n\n", exename);
     fprintf(stderr, "SYNOPSIS\n");
-    fprintf(stderr, "\t%s [-h] chemin_fichiers_gz chemin_fichiers_sorties\n\n", exename);
+    fprintf(stderr, "\t%s [-h] [.ini file]\n\n", exename);
     fprintf(stderr, "DESCRIPTION \n");
-    fprintf(stderr, "\tGénère des fichiers de ngrams traités comme ceci à partir des fichiers .gz :\n\
-    \t<ngram> <nb d'années> <total occurrences> <total volume> <moyenne des années pondérés par le total d'occurrences> <moyenne des années pondérés par le total de volume> <année max> <année min> <occurrences max> <occurences min> <nb volume max> <nb volume min>\
-    Prends en compte uniquement les ngrams taggés avec NOUN, VERB, ADJ, ADV, PRON, DET, ADP, CONJ, PRT et les ngrams différents de ',', '.', '?', '!', '...', ';', ':', '\"', ' ', '''\n\n");
+    fprintf(stderr, 
+    "\tGenerate treated ngrams files like this from .gz file :\n\
+\t<ngram> <nb of year> <total occurrences> <total volumes> \
+<mean ponderated year by the total of occurrences> \
+<mean ponderated year by the total of volumes> \
+<year max> <year min> <occurrences max> <occurences min> \
+<nb volume max> <nb volume min>\n\
+Take into account only ngrams with words tagged with \
+NOUN, VERB, ADJ, ADV, PRON, DET, ADP, CONJ, PRT and words different \
+than ',', '.', '?', '!', '...', ';', ':', '\"', ' ', '''\n\n");
     fprintf(stderr, "ARGUMENTS\n");
-    fprintf(stderr, "\t -h\n\t\tAffiche un message d'aide sur la sortie d'erreur et termine normalement.\n\n");
-    fprintf(stderr, "\t chemin_fichiers_gz\n\t\tLe chemin pour accéder aux fichier .gz.\n\n");
-    fprintf(stderr, "\t chemin_fichiers_sorties\n\t\tLe chemin du répertoire où se trouveront les fichiers de sorties _treated.\n\n");
+    fprintf(stderr, "\t -h\n\t\tPrint this message on stderr.\n\n");
+    fprintf(stderr, 
+    "\t .ini file\n\t\tFile containing arguments for this program.\
+ If not specified, take config.ini in the c++ folder.\n\n");
 }
+
 
 int main(int argc, char** argv)
 {
 	// print usage if the user has written the command incorrectly
-	if( argc != 3 || (argc > 1 && !strcmp(argv[1],"-h")) )
+	if( argc > 2 || (argc > 1 && !strcmp(argv[1],"-h")) )
 	{
 		print_usage(argv[0]);
 		return 0;
 	}
 	auto start = high_resolution_clock::now();
+	
+	// Read ini file to find args
+	string path_to_gz, path_to_output;
+	unsigned nb_ngrams, min_year_defined;
+	const char* ini_filename = argv[0];
+	if( argc <= 1 )
+		ini_filename = NULL;
+	if( read_ini_file(ini_filename, path_to_gz, path_to_output, 
+		nb_ngrams, min_year_defined) )
+	{
+		cout << path_to_gz << endl;
+		cout << path_to_output << endl;
+		cout << nb_ngrams << endl;
+		cout << min_year_defined << endl;
+	}
+	else
+		return 0;
 	
 	// Generate treated files
 	QueueSafe<string> queue_filenames;
@@ -241,11 +201,12 @@ int main(int argc, char** argv)
 	unsigned nb_cores = std::thread::hardware_concurrency();
 	vector<thread> threads;
 
-	collect_filenames(queue_filenames, argv[1], ".gz");
+	collect_filenames(queue_filenames, path_to_gz, ".gz");
 	for(unsigned i=0; i<nb_cores; ++i)
 	{
-		cout << "create thread " << i+1 << endl;
-		threads.emplace_back( [&]{generate_file( i+1, queue_filenames, argv[2], forbidden_characters, accepted_tags ); } );
+		threads.emplace_back( [&]{generate_file( i+1, queue_filenames, 
+			path_to_output, forbidden_characters, accepted_tags, 
+			nb_ngrams, min_year_defined ); } );
 	}
 	for(auto& t: threads)
 		t.join();
@@ -253,10 +214,7 @@ int main(int argc, char** argv)
 
 	auto stop = high_resolution_clock::now(); 
 	auto duration = duration_cast<std::chrono::minutes>(stop - start);
-	cout << "Time taken : " << endl;
-	cout << duration.count() << " minutes" << endl;	
-	cerr << "Time taken : " << endl;
-	cerr << duration.count() << " minutes" << endl;
+	cout << "Time taken : " << duration.count() << " minutes" << endl;
 	
     return 0;
 }

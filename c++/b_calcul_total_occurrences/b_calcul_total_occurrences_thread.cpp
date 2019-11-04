@@ -21,7 +21,7 @@ void calcul_occurrences(unsigned thread_id,
 		if( input == NULL )
 		{
 			print_message_safe(print_mutex, thread_id, "Impossible to open the file", large_filename);
-			break;	
+			continue;	
 		}
 		print_message_safe(print_mutex, thread_id, "start", large_filename);
 		

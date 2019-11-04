@@ -38,6 +38,8 @@ bool valid_nb_ngram(const std::string& nb_ngram);
 
 void init_arg(std::ifstream& file_ini, std::string& line, std::string& arg);
 
+void read_comment(std::ifstream& file_ini, std::string& line);
+
 void print_message_safe(std::mutex& print_mutex, unsigned thread_id, std::string message, std::string filename);
 
 void print_message_safe(std::mutex& print_mutex, unsigned thread_id, std::string message, const char* m);

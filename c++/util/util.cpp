@@ -154,9 +154,22 @@ bool valid_nb_ngram(const string& nb_ngram)
 void init_arg(ifstream& file_ini, string& line, string& arg)
 {
 	file_ini >> line;
+	read_comment(file_ini, line);
 	if( line == "=" )
+	{
 		file_ini >> line;
+		read_comment(file_ini, line);
+	}
 	arg = line;
+}
+
+void read_comment(ifstream& file_ini, string& line)
+{
+	while( line[0] == '#' )
+	{
+		getline(file_ini, line);
+		file_ini >> line;
+	}
 }
 
 bool get_total_occurrences(const char* filename, 

@@ -107,6 +107,12 @@ class Data
 		unsigned get_nb_match_min() { return nb_match_min; }
 		unsigned get_nb_volume_max() { return nb_volume_max; }
 		unsigned get_nb_volume_min() { return nb_volume_min; }
+		
+		unsigned get_nb_mean_pondere_match() { return mean_pondere_match.size(); }
+		unsigned get_nb_mean_pondere_volume() { return mean_pondere_volume.size(); }
+		
+		float get_mean_pondere_match(unsigned num) { return mean_pondere_match[num]; }
+		float get_mean_pondere_volume(unsigned num) { return mean_pondere_volume[num]; }
 };
 
 #endif

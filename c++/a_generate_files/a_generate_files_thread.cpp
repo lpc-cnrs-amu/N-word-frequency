@@ -48,13 +48,13 @@ void generate_file(unsigned thread_id, QueueSafe<string>& queue_filenames,
 		if( large_file == NULL )
 		{
 			print_message_safe(print_mutex, thread_id, "Impossible to open the file", large_filename);
-			break;	
+			continue;	
 		}
 			
 		// open the output file
 		FILE* output = get_file(thread_id, large_filename, path_to_output, ".gz", "_treated");
 		if( output == NULL )
-			break;
+			continue;
 
 		somme_year = 0;
 		somme_nb_match = 0;

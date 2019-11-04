@@ -3,7 +3,7 @@
 using namespace std;
 
 void update_args(ifstream& file_ini, string& line, string& path_to_gz, 
-	string& path_to_output, unsigned& nb_ngram, unsigned& min_year)
+	string& path_to_output, unsigned& nb_ngrams, unsigned& min_year_defined)
 { 
 	string tmp("");
 	if( line == "path_to_gz_files" || line == "path_to_gz_files=" )
@@ -18,7 +18,7 @@ void update_args(ifstream& file_ini, string& line, string& path_to_gz,
 	{
 		init_arg(file_ini, line, tmp);
 		if( valid_nb_ngram(tmp) )
-			nb_ngram = stoul(tmp);
+			nb_ngrams = stoul(tmp);
 		else
 			cerr << "WARNING invalid entry for nb_ngram." 
 				 << " nb_ngram is now set to 1\n";
@@ -27,7 +27,7 @@ void update_args(ifstream& file_ini, string& line, string& path_to_gz,
 	{
 		init_arg(file_ini, line, tmp);
 		if( valid_min_year(tmp) )
-			min_year = stoul(tmp);
+			min_year_defined = stoul(tmp);
 		else
 			cerr << "WARNING invalid entry for min_year."
 				 << " min_year is now set to 0\n";

@@ -4,7 +4,7 @@
 #include "../util/util.hpp"
 
 void update_args(std::ifstream& file_ini, std::string& line, std::string& path_to_gz, 
-	std::string& path_to_output, unsigned& nb_ngram, unsigned& min_year);
+	std::string& path_to_output, unsigned& nb_ngrams, unsigned& min_year_defined);
 	
 bool read_ini_file(const char* ini_filename, std::string& path_to_gz, 
 	std::string& path_to_output, unsigned& nb_ngrams, unsigned& min_year_defined);

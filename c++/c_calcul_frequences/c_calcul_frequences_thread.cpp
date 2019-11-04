@@ -19,7 +19,7 @@ void calcul_freq(unsigned thread_id, QueueSafe<string>& queue_filenames,
 		if( input == NULL )
 		{
 			print_message("Impossible to open the file ", large_filename);
-			break;	
+			continue;	
 		}
 		
 		print_message_safe(print_mutex, thread_id, "start", large_filename);

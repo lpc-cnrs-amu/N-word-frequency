@@ -2,7 +2,6 @@
 #define QUEUE_SAFE_HPP
 
 #include <mutex>
-#include <condition_variable>
 #include <queue>
 
 template<typename T>
@@ -12,7 +11,6 @@ class QueueSafe
 	private:
 		std::queue<T> _queue;
 		std::mutex _mutex;
-		std::condition_variable _condition_variable;
 	public:
 		void push_front(T const& data){ _queue.push(data); }
 

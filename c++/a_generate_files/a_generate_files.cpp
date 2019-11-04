@@ -1,8 +1,4 @@
-#include "../zlib1211/zlib.h"
-#include "fct_valid_lines.hpp"
 #include "fct_generate_files.hpp"
-
-#define CHUNK_SIZE 1024
 
 using namespace std;
 using namespace std::chrono;
@@ -20,7 +16,7 @@ using namespace std::chrono;
  */
 bool generate_file(string& large_filename, string& path_to_output,
 	vector<string>& forbidden_characters, vector<string>& accepted_tags,
-	unsigned nb_ngram, unsigned min_year_defined)
+	unsigned nb_ngrams, unsigned min_year_defined)
 {	
 	// open the .gz file
 	gzFile large_file = gzopen(large_filename.c_str(), "rb");
@@ -35,92 +31,14 @@ bool generate_file(string& large_filename, string& path_to_output,
 		path_to_output, ".gz", "_treated");
 	if( output == NULL )
 		return false;
-	
-	// to treat the lines
-	unsigned char buffer[CHUNK_SIZE];
-	unsigned int unzipped_bytes = 1;
-	string ngram;
-	string precedent_ngram = "";
-	stringstream token("");
-	unsigned year, nb_match, nb_volume;
-	int err;
-	
-	// for the operations on the lines
-	unsigned somme_year = 0;
-	unsigned somme_nb_match = 0;
-	unsigned somme_nb_volume = 0;
-	float mean_pondere_match = 0;
-	float mean_pondere_volume = 0; 
-	unsigned year_max = 0;
-	unsigned year_min = 3000;
-	unsigned nb_match_max = 0;
-	unsigned nb_match_min = 100000;
-	unsigned nb_volume_max = 0;
-	unsigned nb_volume_min = 100000;
-	bool one_valid_line = false;
-							
-	while(1)
-	{
-		memset(buffer, 0, sizeof(buffer));
-		unzipped_bytes = gzread(large_file, buffer, CHUNK_SIZE-1);
 		
-		// read nothing...
-		if(unzipped_bytes <= 0)
-		{
-			// ... because of end of file
-            if (gzeof (large_file))
-            {
-				print_message("finish ", large_filename);
-                break;
-            }
-            // ... because of an error
-            else 
-			{
-				const char * error_string = gzerror (large_file, &err);
-				if (err) 
-				{
-					print_message("Error : ", error_string);
-					break;
-				}
-			}
-		}
-		buffer[unzipped_bytes] = '\0';
-		for(unsigned i=0; i<unzipped_bytes; ++i)
-		{
-			if( buffer[i] != '\n' )
-				token << buffer[i];
-			else
-			{
-				if( valid_line(token.str(), ngram, year, nb_match, 
-					nb_volume, forbidden_characters, accepted_tags, 
-					nb_ngram, min_year_defined) )
-				{
-					one_valid_line = true;
-					treat_line(output, ngram, precedent_ngram, somme_year,
-						somme_nb_match, somme_nb_volume, mean_pondere_match,
-						mean_pondere_volume, year_max, year_min,
-						nb_match_max, nb_match_min, nb_volume_max,
-						nb_volume_min, year, nb_match, nb_volume);
-					precedent_ngram = ngram;
-				}
-				token.str(std::string());
-				token.clear();
-			}
-		}
-	}
-	// write the last treated line
-	if( one_valid_line && !file_not_entirely_read(token) )
-	{
-		fprintf(output, 
-			"%s\t%d\t%d\t%d\t%.2f\t%.2f\t%d\t%d\t%d\t%d\t%d\t%d\n", 
-			ngram.c_str(), somme_year, somme_nb_match, somme_nb_volume, 
-			mean_pondere_match/static_cast<float>(somme_nb_match), 
-			mean_pondere_volume/static_cast<float>(somme_nb_volume), 
-			year_max, year_min, nb_match_max, nb_match_min, 
-			nb_volume_max, nb_volume_min);
-	}
+	print_message("start ", large_filename);
+	treat_file(-1, large_file, output, large_filename, forbidden_characters, 
+		accepted_tags, nb_ngrams, min_year_defined);
+
 	gzclose(large_file);
 	fclose(output);
+	print_message("finish ", large_filename);
 	return true;
 }
 

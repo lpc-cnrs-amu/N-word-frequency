@@ -1,6 +1,7 @@
 #ifndef FCT_GENERATE_FILES_HPP
 #define FCT_GENERATE_FILES_HPP
 
+#include "../zlib1211/zlib.h"
 #include "../util/util.hpp"
 
 void update_args(std::ifstream& file_ini, std::string& line, std::string& path_to_gz, 
@@ -16,5 +17,9 @@ void treat_line(FILE* output, std::string& ngram, std::string& precedent_ngram, 
 	unsigned& nb_volume_min, unsigned year, unsigned nb_match, unsigned nb_volume);
 	
 bool file_not_entirely_read(std::stringstream& token);
+
+void treat_file(int thread_id, gzFile large_file, FILE* output, std::string large_filename,
+	std::vector<std::string>& forbidden_characters, std::vector<std::string>& accepted_tags, 
+	unsigned nb_ngrams, unsigned min_year_defined);
 
 #endif

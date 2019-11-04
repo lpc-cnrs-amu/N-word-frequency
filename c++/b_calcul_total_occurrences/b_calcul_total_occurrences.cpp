@@ -3,8 +3,7 @@
 using namespace std;
 using namespace std::chrono;
 
-bool calcul_occurrences(string large_filename, 
-	unsigned long long& total_match, unsigned nb_ngrams, unsigned min_year_defined)
+bool calcul_occurrences(string large_filename, unsigned long long& total_match)
 {			
 	FILE* input = fopen(large_filename.c_str(), "r");
 	if( input == NULL )
@@ -14,7 +13,7 @@ bool calcul_occurrences(string large_filename,
 	}
 	print_message("start", large_filename);
 							
-	treat_occurrences(input, large_filename, total_match, nb_ngrams, min_year_defined);
+	treat_occurrences(input, large_filename, total_match);
 	
 	fclose(input);
 	print_message("finish", large_filename);
@@ -38,11 +37,10 @@ void print_usage(const char* exename)
     fprintf(stderr, "\t chemin_fichiers_treated\n\t\tLe chemin pour accéder aux fichier _treated.\n\n");
 }
 
-void calcul_handler(vector<string>& filenames, 
-	unsigned long long& total_match, unsigned nb_ngrams, unsigned min_year_defined)
+void calcul_handler(vector<string>& filenames, unsigned long long& total_match)
 {
 	for(unsigned i=0; i<filenames.size(); ++i)
-		if( !calcul_occurrences(filenames[i], total_match, nb_ngrams, min_year_defined) )
+		if( !calcul_occurrences(filenames[i], total_match) )
 			cerr << "didn't process the file " << filenames[i] << "\n";
 }
 
@@ -58,17 +56,16 @@ int main(int argc, char** argv)
 	
 	// Read ini file to find args
 	string output_file_name, totalcount_file, path_to_treated_files;
-	unsigned nb_ngrams, min_year_defined;
+	unsigned min_year_defined;
 	const char* ini_filename = argv[0];
 	if( argc <= 1 )
 		ini_filename = NULL;
 	if( read_ini_file(ini_filename, output_file_name, totalcount_file, 
-		path_to_treated_files, nb_ngrams, min_year_defined) )
+		path_to_treated_files, min_year_defined) )
 	{
 		cout << output_file_name << endl;
 		cout << totalcount_file << endl;
 		cout << path_to_treated_files << endl;
-		cout << nb_ngrams << endl;
 		cout << min_year_defined << endl;
 	}
 	else
@@ -82,7 +79,7 @@ int main(int argc, char** argv)
 	vector<string> filenames;
 	unsigned long long total_match = 0;
 	collect_filenames(filenames, path_to_treated_files, "_treated");
-	calcul_handler(filenames, total_match, nb_ngrams, min_year_defined);
+	calcul_handler(filenames, total_match);
 	
 	// Write in output file
 	write_output(output_file_name.c_str(), total_match, total_volume);

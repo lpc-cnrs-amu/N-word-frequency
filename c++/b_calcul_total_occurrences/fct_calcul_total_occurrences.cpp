@@ -6,30 +6,15 @@ using namespace std;
 
 void update_args(ifstream& file_ini, string& line, string& output_file_name, 
 	string& totalcount_file, string& path_to_treated_files, 
-	unsigned& nb_ngrams, unsigned& min_year_defined)
+	unsigned& min_year_defined)
 { 
 	string tmp("");
 	if( line == "output_file_name" || line == "output_file_name=" )
-	{
 		init_arg(file_ini, line, output_file_name);
-	}
 	else if( line == "totalcount_file" || line == "totalcount_file=" )
-	{
 		init_arg(file_ini, line, totalcount_file);
-	}
 	else if( line == "path_to_treated_files" || line == "path_to_treated_files=" )
-	{
 		init_arg(file_ini, line, path_to_treated_files);
-	}
-	else if( line == "nb_ngram" || line == "nb_ngram=" )
-	{
-		init_arg(file_ini, line, tmp);
-		if( valid_nb_ngram(tmp) )
-			nb_ngrams = stoul(tmp);
-		else
-			cerr << "WARNING invalid entry for nb_ngram." 
-				 << " nb_ngram is now set to 1\n";
-	}
 	else if( line == "min_year" || line == "min_year=" )
 	{
 		init_arg(file_ini, line, tmp);
@@ -44,20 +29,19 @@ void update_args(ifstream& file_ini, string& line, string& output_file_name,
 		cerr << "WARNING don't recognize this variable : " << line
 			 << "\nVariables for b_calcul_total_occurrences should be : "
 			 << "output_file_name, totalcount_file, "
-			 << "path_to_treated_files, nb_ngram, min_year\n";
+			 << "path_to_treated_files, min_year\n";
 	}
 }
 
 bool read_ini_file(const char* ini_filename, string& output_file_name, 
 	string& totalcount_file, string& path_to_treated_files, 
-	unsigned& nb_ngrams, unsigned& min_year_defined)
+	unsigned& min_year_defined)
 {
 	ifstream file_ini;
 	string line("");
 	output_file_name = "";
 	totalcount_file = "";
 	path_to_treated_files = "";
-	nb_ngrams = 1;
 	min_year_defined = 0;
 
 	if( ini_filename == NULL )
@@ -85,7 +69,7 @@ bool read_ini_file(const char* ini_filename, string& output_file_name,
 		{
 			update_args(file_ini, line, output_file_name, 
 				totalcount_file, path_to_treated_files, 
-				nb_ngrams, min_year_defined);
+				min_year_defined);
 			file_ini >> line;
 		}
 	}
@@ -115,7 +99,7 @@ bool write_output(const char* filename, unsigned long long total_match,
 }
 
 void treat_occurrences(FILE* input, string& large_filename, 
-	unsigned long long& total_match, unsigned nb_ngrams, unsigned min_year_defined)
+	unsigned long long& total_match)
 {
 	char buffer[LINE_SIZE];
 	unsigned position;
@@ -141,14 +125,7 @@ void treat_occurrences(FILE* input, string& large_filename,
 			token = line.substr(0, pos);
 			line.erase(0, pos + delimiter.length());
 			
-			/** TODO replace cout << "ok"; */
-			if( position == 1 ) //ngram
-				cout << "ok";
-			else if( position == 2 ) //year
-			{
-				cout << "ok";
-			}
-			else if( position == 3 )
+			if( position == 3 )
 				match = stoi( token );
 		}
 		if( line != "" )

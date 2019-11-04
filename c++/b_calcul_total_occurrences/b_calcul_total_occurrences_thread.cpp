@@ -6,8 +6,8 @@ using namespace std::chrono;
 
 mutex print_mutex;
 
-void calcul_occurrences(unsigned thread_id, QueueSafe<string>& queue_filenames, 
-	OccurrencesSafe& occurrences, unsigned nb_ngrams, unsigned min_year_defined)
+void calcul_occurrences(unsigned thread_id, 
+	QueueSafe<string>& queue_filenames, OccurrencesSafe& occurrences)
 {
 	string large_filename;
 	unsigned long long total_match;
@@ -26,8 +26,7 @@ void calcul_occurrences(unsigned thread_id, QueueSafe<string>& queue_filenames,
 		print_message_safe(print_mutex, thread_id, "start", large_filename);
 		
 		total_match = 0;
-		treat_occurrences(input, large_filename, total_match, nb_ngrams, 
-			min_year_defined);
+		treat_occurrences(input, large_filename, total_match);
 		
 		occurrences.add_match( total_match );
 		fclose(input);
@@ -63,17 +62,16 @@ int main(int argc, char** argv)
 	
 	// Read ini file to find args
 	string output_file_name, totalcount_file, path_to_treated_files;
-	unsigned nb_ngrams, min_year_defined;
+	unsigned min_year_defined;
 	const char* ini_filename = argv[0];
 	if( argc <= 1 )
 		ini_filename = NULL;
 	if( read_ini_file(ini_filename, output_file_name, totalcount_file, 
-		path_to_treated_files, nb_ngrams, min_year_defined) )
+		path_to_treated_files, min_year_defined) )
 	{
 		cout << output_file_name << endl;
 		cout << totalcount_file << endl;
 		cout << path_to_treated_files << endl;
-		cout << nb_ngrams << endl;
 		cout << min_year_defined << endl;
 	}
 	else
@@ -91,7 +89,7 @@ int main(int argc, char** argv)
 	collect_filenames(queue_filenames, path_to_treated_files, "_treated");
 	for(unsigned i=0; i<nb_cores; ++i)
 		threads.emplace_back( [&]{calcul_occurrences( i+1, 
-			queue_filenames, occurrences, nb_ngrams, min_year_defined); } );
+			queue_filenames, occurrences); } );
 	for(auto& t: threads)
 		t.join();
 	threads.clear();

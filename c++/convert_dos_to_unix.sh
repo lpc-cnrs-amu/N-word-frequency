@@ -8,7 +8,7 @@ for i in "${array[@]}";do
 	done
 done
 
-for file in ./*;do
+for file in *;do
 	if [[ -f $file ]]; then
 		dos2unix $file
 	fi

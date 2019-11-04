@@ -59,18 +59,19 @@ bool read_ini_file(const char* ini_filename, string& output_file_name,
     {
 		if( !getline(file_ini, line) )
 			break;
-		cout << line << endl;
 	}
 	
 	if( line == "b_calcul_total_occurrences:" || line == "b_calcul_total_occurrences" )
 	{
 		file_ini >> line;
+		read_comment(file_ini, line);
 		while( line != "END" && line != "" )
 		{
 			update_args(file_ini, line, output_file_name, 
 				totalcount_file, path_to_treated_files, 
 				min_year_defined);
 			file_ini >> line;
+			read_comment(file_ini, line);
 		}
 	}
 	else

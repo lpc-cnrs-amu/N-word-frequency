@@ -96,11 +96,13 @@ bool read_ini_file(const char* ini_filename, string& total_occurrences_files,
 	if( line == "c_calcul_frequences:" || line == "c_calcul_frequences" )
 	{
 		file_ini >> line;
+		read_comment(file_ini, line);
 		while( line != "END" && line != "" )
 		{
 			update_args(file_ini, line, total_occurrences_files, 
 				path_to_treated_files, path_to_output_files);
 			file_ini >> line;
+			read_comment(file_ini, line);
 		}
 	}
 	else

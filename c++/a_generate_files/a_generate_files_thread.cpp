@@ -27,6 +27,8 @@ void generate_file(unsigned thread_id, QueueSafe<string>& queue_filenames,
 		FILE* output = get_file(thread_id, large_filename, path_to_output, ".gz", "_treated");
 		if( output == NULL )
 			continue;
+		
+		print_message_safe(print_mutex, thread_id, "start", large_filename);
 
 		treat_file(thread_id, large_file, output, large_filename, forbidden_characters, 
 			accepted_tags, nb_ngrams, min_year_defined);

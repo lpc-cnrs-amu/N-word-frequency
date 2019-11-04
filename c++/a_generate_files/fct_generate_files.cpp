@@ -69,23 +69,24 @@ bool read_ini_file(const char* ini_filename, string& path_to_gz,
     {
 		if( !getline(file_ini, line) )
 			break;
-		cout << line << endl;
 	}
-	
 	if( line == "a_generate_file:" || line == "a_generate_file" )
 	{
 		file_ini >> line;
+		read_comment(file_ini, line);
 		while( line != "END" && line != "" )
 		{
 			update_args(file_ini, line, path_to_gz, 
 				path_to_output, nb_ngrams, min_year_defined);
 			file_ini >> line;
+			read_comment(file_ini, line);
 		}
 	}
 	else
 	{
 		cerr << "Didn't find the line \"a_generate_file:\" or "
 			 << "\"a_generate_file\". Stop.\n";
+		file_ini.close();
 		return false;
 	}
 	file_ini.close();

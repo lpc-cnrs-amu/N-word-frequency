@@ -107,9 +107,7 @@ int main(int argc, char** argv)
 	// Read ini file to find args
 	string path_to_gz, path_to_output;
 	unsigned nb_ngrams, min_year_defined;
-	const char* ini_filename = argv[0];
-	if( argc <= 1 )
-		ini_filename = NULL;
+	const char* ini_filename = argv[1];
 	if( read_ini_file(ini_filename, path_to_gz, path_to_output, 
 		nb_ngrams, min_year_defined) )
 	{
@@ -119,7 +117,7 @@ int main(int argc, char** argv)
 		cout << min_year_defined << endl;
 	}
 	else
-		return 0;
+		return -1;
 	
 	// Generate treated files
 	vector<string> filenames;

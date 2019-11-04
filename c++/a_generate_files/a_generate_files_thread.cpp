@@ -15,7 +15,6 @@ void generate_file(unsigned thread_id, QueueSafe<string>& queue_filenames,
 		if( !queue_filenames.try_pop(large_filename) )
 			continue;
 		
-		// open the .gz file
 		gzFile large_file = gzopen(large_filename.c_str(), "rb");
 		if( large_file == NULL )
 		{
@@ -23,13 +22,11 @@ void generate_file(unsigned thread_id, QueueSafe<string>& queue_filenames,
 			continue;	
 		}
 			
-		// open the output file
 		FILE* output = get_file(thread_id, large_filename, path_to_output, ".gz", "_treated");
 		if( output == NULL )
 			continue;
 		
 		print_message_safe(print_mutex, thread_id, "start", large_filename);
-
 		treat_file(thread_id, large_file, output, large_filename, forbidden_characters, 
 			accepted_tags, nb_ngrams, min_year_defined);
 		
@@ -53,14 +50,14 @@ void print_usage(const char* exename)
     fprintf(stderr, "DESCRIPTION \n");
     fprintf(stderr, 
     "\tGenerate treated ngrams files like this from .gz file :\n\
-\t<ngram> <nb of year> <total occurrences> <total volumes> \
-<mean ponderated year by the total of occurrences> \
-<mean ponderated year by the total of volumes> \
-<year max> <year min> <occurrences max> <occurences min> \
-<nb volume max> <nb volume min>\n\
-Take into account only ngrams with words tagged with \
-NOUN, VERB, ADJ, ADV, PRON, DET, ADP, CONJ, PRT and words different \
-than ',', '.', '?', '!', '...', ';', ':', '\"', ' ', '''\n\n");
+\t<ngram> <nb of year> <total occurrences> <total volumes>\n \
+\t<mean ponderated year by the total of occurrences> \
+<mean ponderated year by the total of volumes>\n\
+\t<year max> <year min> <occurrences max> <occurences min> \
+<nb volume max> <nb volume min>\n\n\
+\tTake into account only ngrams with words tagged with :\n\
+\tNOUN, VERB, ADJ, ADV, PRON, DET, ADP, CONJ, PRT and words different \
+than:\n\t',', '.', '?', '!', '...', ';', ':', '\"', ' ', '''\n\n");
     fprintf(stderr, "ARGUMENTS\n");
     fprintf(stderr, "\t -h\n\t\tPrint this message on stderr.\n\n");
     fprintf(stderr, 
@@ -82,9 +79,7 @@ int main(int argc, char** argv)
 	// Read ini file to find args
 	string path_to_gz, path_to_output;
 	unsigned nb_ngrams, min_year_defined;
-	const char* ini_filename = argv[0];
-	if( argc <= 1 )
-		ini_filename = NULL;
+	const char* ini_filename = argv[1];
 	if( read_ini_file(ini_filename, path_to_gz, path_to_output, 
 		nb_ngrams, min_year_defined) )
 	{
@@ -94,7 +89,7 @@ int main(int argc, char** argv)
 		cout << min_year_defined << endl;
 	}
 	else
-		return 0;
+		return -1;
 	
 	// Generate treated files
 	QueueSafe<string> queue_filenames;

@@ -57,9 +57,7 @@ int main(int argc, char** argv)
 	// Read ini file to find args
 	string output_file_name, totalcount_file, path_to_treated_files;
 	unsigned min_year_defined;
-	const char* ini_filename = argv[0];
-	if( argc <= 1 )
-		ini_filename = NULL;
+	const char* ini_filename = argv[1];
 	if( read_ini_file(ini_filename, output_file_name, totalcount_file, 
 		path_to_treated_files, min_year_defined) )
 	{
@@ -69,7 +67,7 @@ int main(int argc, char** argv)
 		cout << min_year_defined << endl;
 	}
 	else
-		return 0;
+		return -1;
 	
 	// Calculate the total nb of volumes with the totalcount file
 	unsigned long long total_volume;

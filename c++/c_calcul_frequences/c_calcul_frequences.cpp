@@ -67,9 +67,7 @@ int main(int argc, char** argv)
 	
 	// Read ini file to find args
 	string total_occurrences_files, path_to_treated_files, path_to_output_files;
-	const char* ini_filename = argv[0];
-	if( argc <= 1 )
-		ini_filename = NULL;
+	const char* ini_filename = argv[1];
 	if( read_ini_file(ini_filename, total_occurrences_files, 
 		path_to_treated_files, path_to_output_files) )
 	{

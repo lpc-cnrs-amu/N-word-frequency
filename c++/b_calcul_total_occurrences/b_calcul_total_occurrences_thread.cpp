@@ -6,6 +6,17 @@ using namespace std::chrono;
 
 mutex print_mutex;
 
+void print_safe(mutex& print_mutex, unsigned thread_id, string large_filename,
+	unsigned long long total_match, unsigned long long total_match_total)
+{
+	std::lock_guard<std::mutex> guard(print_mutex);
+	cout << "Thread " << thread_id << " (" << large_filename << ") : "
+		 << total_match << endl;
+	cout << "Thread " << thread_id << " (" << large_filename << ") : TOTAL : "
+		 << total_match_total << endl;
+	
+}
+
 void calcul_occurrences(unsigned thread_id, 
 	QueueSafe<string>& queue_filenames, OccurrencesSafe& occurrences)
 {
@@ -28,7 +39,9 @@ void calcul_occurrences(unsigned thread_id,
 		total_match = 0;
 		treat_occurrences(input, large_filename, total_match);
 		
+		
 		occurrences.add_match( total_match );
+		//print_safe(print_mutex, thread_id, large_filename, total_match, occurrences.get_total_match());
 		fclose(input);
 		print_message_safe(print_mutex, thread_id, "finish", large_filename);
 	}
@@ -76,8 +89,9 @@ int main(int argc, char** argv)
 		return -1;
 	
 	// Calculate the total nb of volumes with the totalcount file
-	unsigned long long total_volume;
+	unsigned long long total_volume = 0;
 	get_total_volume(totalcount_file.c_str(), total_volume, min_year_defined);
+	cout << "volume = " << total_volume << endl;
 	
 	// Calculate the total nb of occurrences with thread (one file per thread)
 	QueueSafe<string> queue_filenames;

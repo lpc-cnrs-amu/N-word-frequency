@@ -70,7 +70,7 @@ int main(int argc, char** argv)
 		return -1;
 	
 	// Calculate the total nb of volumes with the totalcount file
-	unsigned long long total_volume;
+	unsigned long long total_volume = 0;
 	get_total_volume(totalcount_file.c_str(), total_volume, min_year_defined);
 	
 	// Calculate the total nb of occurrences with treated files

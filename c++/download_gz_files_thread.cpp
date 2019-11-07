@@ -166,5 +166,6 @@ int main(void)
 		t.join();
 	threads.clear();
 	
+	fclose(fp);
     return 0;
 }

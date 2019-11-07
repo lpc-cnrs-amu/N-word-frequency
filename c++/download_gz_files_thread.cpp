@@ -6,17 +6,17 @@
 #include <thread>
 #include <mutex>
 
-using namespace std;
-
 #define LINE_SIZE 10000
 
+using namespace std;
 mutex print_mutex;
 mutex read_mutex;
 
-bool error_curl(unsigned thread_id, const char* message, const char* arg, CURL *curl, 
+bool error_curl(CURLcode code, unsigned thread_id, const char* message, const char* arg, CURL *curl, 
 	FILE* fp, const char* output_filename)
 {
 	std::lock_guard<std::mutex> guard(print_mutex);
+	fprintf(stderr, "Thread %d - Err %d ", thread_id, code);
 	if(arg != NULL)
 		fprintf(stderr, message, arg);
 	else
@@ -31,6 +31,7 @@ bool error_curl(unsigned thread_id, const char* message, const char* arg, CURL *
 void print_safe(unsigned thread_id, const char* message, const char* arg)
 {
 	std::lock_guard<std::mutex> guard(print_mutex);
+	fprintf(stderr, "Thread %d - ", thread_id);
 	if( arg != NULL )
 		fprintf(stderr, message, arg);
 	else
@@ -57,38 +58,39 @@ bool download_file(unsigned thread_id, const char* output_filename, const char* 
 		
 		code = curl_easy_setopt(curl, CURLOPT_URL, url);
 		if(code != CURLE_OK) 
-			return error_curl(thread_id, "Failed to set URL %s\n", url, curl, 
+			return error_curl(code, thread_id, "Failed to set URL %s\n", url, curl, 
 				fp, output_filename);
 		
 		code = curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, NULL);
 		if(code != CURLE_OK) 
-			return error_curl(thread_id, "Failed to set CURLOPT_WRITEFUNCTION\n", 
+			return error_curl(code, thread_id, "Failed to set CURLOPT_WRITEFUNCTION\n", 
 				NULL, curl, fp, output_filename);
 		
 		code = curl_easy_setopt(curl, CURLOPT_WRITEDATA, fp);
 		if(code != CURLE_OK) 
-			return error_curl(thread_id, "Failed to set output file %s\n", 
+			return error_curl(code, thread_id, "Failed to set output file %s\n", 
 				output_filename, curl, fp, output_filename);
 		
 		code = curl_easy_perform(curl);
 		if(code != CURLE_OK) 
-			return error_curl(thread_id, "Failed to perform curl\n", NULL, curl, 
+			return error_curl(code, thread_id, "Failed to perform curl\n", NULL, curl, 
 				fp, output_filename);
 		
 		curl_easy_cleanup(curl);
+		print_safe(thread_id, "Finish %s\n", url);
 		fclose(fp);
 	}  
 	else
-		return error_curl(thread_id, "Failed to create CURL connection\n", 
+		return error_curl(code, thread_id, "Failed to create CURL connection\n", 
 			NULL, curl, fp, output_filename);
 
 	return true;
 }
 
-bool read_one_line(FILE* fp, char* buffer)
+bool read_one_line(unsigned thread_id, FILE* fp, char buffer[1000])
 {
 	std::lock_guard<std::mutex> guard(read_mutex);
-	if ( fgets(buffer, sizeof(buffer), fp) == NULL )
+	if ( fgets(buffer, 1000, fp) == NULL )
 		return false;
 	return true;
 }
@@ -110,17 +112,18 @@ bool search_urls(unsigned thread_id, FILE* fp,
 	smatch match_url;
 	smatch match_filename;
 	
-	char buffer[LINE_SIZE];
+	char buffer[1000];
 	string line;
 	string output_filename;
 	string url;
 	
 	while( !end_of_file(fp) )
-	{
-		line = buffer;
-		
-		if( !read_one_line(fp, buffer) )
+	{	
+		if( !read_one_line(thread_id, fp, buffer) )
 			break;
+		
+		line = buffer;
+		memset(buffer, 0, sizeof(buffer));
 		
 		// find a correct url
 		if( regex_search(line, match_url, pattern_url) )
@@ -130,9 +133,7 @@ bool search_urls(unsigned thread_id, FILE* fp,
 			{
 				output_filename = match_filename[0];
 				output_filename = output_folder + output_filename;
-				if( !download_file(thread_id, output_filename.c_str(), url.c_str()) )
-					continue;
-				print_safe(thread_id, "Finish %s\n", url.c_str());
+				download_file(thread_id, output_filename.c_str(), url.c_str());
 			}
 			else
 				fprintf(stderr, "Didn't find the output filename in match %s\n", url.c_str());
@@ -155,12 +156,11 @@ int main(void)
 		return -1;
 	}
 	
-	
 	unsigned nb_cores = std::thread::hardware_concurrency();
 	vector<thread> threads;
 	
 	for(unsigned i=0; i<nb_cores; ++i)
-		threads.emplace_back( [&]{search_urls( i+1, fp, "", "fre", "4"); } );
+		threads.emplace_back( [&]{search_urls( i, fp, "/mnt/j/ENG_2GRAMS_thread/", "eng", "2"); } );
 		
 	for(auto& t: threads)
 		t.join();

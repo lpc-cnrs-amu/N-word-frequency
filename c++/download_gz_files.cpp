@@ -123,7 +123,7 @@ int main(void)
 		"http://storage.googleapis.com/books/ngrams/books/datasetsv2.html") )
 		return -1;
 	
-	if( !search_urls(html_filename, "", "fre", "4") )
+	if( !search_urls(html_filename, "/mnt/j/ENG_2GRAMS_thread/", "eng", "2") )
 		return -1;
 	
     return 0;

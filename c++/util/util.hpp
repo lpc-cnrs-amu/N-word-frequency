@@ -13,6 +13,7 @@
 #include <chrono>
 #include <cstdio>
 #include <thread>
+#include <climits>
 #include "QueueSafe.hpp"
 
 bool has_suffix(const char* name, std::string& suffix);

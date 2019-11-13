@@ -79,8 +79,8 @@ bool read_ini_file(const char* ini_filename, string& output_file_name,
 }
 
 
-void def_new_min(map<string, float>& most_frequent_ngrams,
-	string& key_min, float& freq_min)
+void def_new_min(map<string, long double>& most_frequent_ngrams,
+	string& key_min, long double& freq_min)
 {
 	freq_min = 999999;
 	for(auto it=most_frequent_ngrams.begin(); it != most_frequent_ngrams.end(); ++it)
@@ -93,8 +93,8 @@ void def_new_min(map<string, float>& most_frequent_ngrams,
 	}
 }
 
-void compare_freq(map<string, float>& most_frequent_ngrams, string new_key, 
-	float freq, unsigned nb_sentences, string& key_min, float& freq_min)
+void compare_freq(map<string, long double>& most_frequent_ngrams, string new_key, 
+	long double freq, unsigned nb_sentences, string& key_min, long double& freq_min)
 {
 	if( most_frequent_ngrams.empty() )
 	{
@@ -131,18 +131,17 @@ void compare_freq(map<string, float>& most_frequent_ngrams, string new_key,
 }
 
 void treat_most_freq(FILE* input, string large_filename, 
-	map<string, float>& most_frequent_ngrams, unsigned nb_sentences, 
-	string& key_min, float& freq_min)
+	map<string, long double>& most_frequent_ngrams, unsigned nb_sentences, 
+	string& key_min, long double& freq_min)
 {
 	char buffer[LINE_SIZE];
 	unsigned position;
 	size_t pos;
-	float freq;
+	long double freq;
 	unsigned cpt_line = 0;
 	string delimiter("\t");
 	string token;
 	string line("");
-	string ngrams("");
 	
 	while( fgets(buffer, sizeof(buffer), input) )
 	{	
@@ -159,11 +158,8 @@ void treat_most_freq(FILE* input, string large_filename,
 			token = line.substr(0, pos);
 			line.erase(0, pos + delimiter.length());
 			
-			if( position == 1 )
-				ngrams = token;
-			
 			if( position == 13 )
-				freq = stof( token );
+				freq = stold( token );
 		}
 		if( line != "" )
 			++ position;
@@ -183,8 +179,8 @@ void treat_most_freq(FILE* input, string large_filename,
 }
 
 void update_most_frequent_ngrams_safe(mutex& map_mutex, 
-	map<string, float>& most_frequent_ngrams, map<string, float>& most_frequent_ngrams_tmp, 
-	unsigned nb_sentences, string& key_min, float& freq_min)
+	map<string, long double>& most_frequent_ngrams, map<string, long double>& most_frequent_ngrams_tmp, 
+	unsigned nb_sentences, string& key_min, long double& freq_min)
 {
 	std::lock_guard<std::mutex> guard(map_mutex);
 	
@@ -197,7 +193,7 @@ void update_most_frequent_ngrams_safe(mutex& map_mutex,
 }
 
 bool write_output(const char* filename, 
-	map<string, float>& most_frequent_ngrams)
+	map<string, long double>& most_frequent_ngrams)
 {
 	FILE* output = fopen(filename, "w");
 	if( output == NULL )

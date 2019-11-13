@@ -13,8 +13,8 @@ void treat_freq(FILE* input, FILE* output, string& large_filename,
 	string delimiter("\t");
 	string token;
 	string line("");
-	float freq_match = 0;
-	float freq_volume = 0;
+	long double freq_match = 0;
+	long double freq_volume = 0;
 	unsigned cpt_line = 0;		
 	while( fgets(buffer, sizeof(buffer), input) )
 	{
@@ -31,9 +31,9 @@ void treat_freq(FILE* input, FILE* output, string& large_filename,
 			line.erase(0, pos + delimiter.length());
 		
 			if(position == 3)
-				freq_match = stoi( token ) / (total_match*0.1);
+				freq_match = stoull( token ) / static_cast<long double>(total_match);
 			else if(position == 4)
-				freq_volume = stoi( token ) / (total_volume*0.1);
+				freq_volume = stoull( token ) / static_cast<long double>(total_volume);
 		}
 		if( line != "" )
 			++ position;
@@ -42,7 +42,7 @@ void treat_freq(FILE* input, FILE* output, string& large_filename,
 			cerr << "WARNING bad line (num " << cpt_line 
 				 << ") on file " << large_filename << " : " << buffer << "\n";
 		else
-			fprintf(output, "%s\t%.8e\t%.8e\n", strtok(buffer, "\n"), freq_match, freq_volume);
+			fprintf(output, "%s\t%.8Le\t%.8Le\n", strtok(buffer, "\n"), freq_match, freq_volume);
 		memset(buffer, 0, sizeof(buffer));
 	}
 }

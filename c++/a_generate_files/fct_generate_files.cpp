@@ -114,19 +114,21 @@ bool read_ini_file(const char* ini_filename, string& path_to_gz,
  * \param nb_volume
  */
 void treat_line(FILE* output, string& ngram, string& precedent_ngram, unsigned& somme_year,
-	unsigned& somme_nb_match, unsigned& somme_nb_volume, float& mean_pondere_match,
-	float& mean_pondere_volume,	unsigned& year_max,	unsigned& year_min,
-	unsigned& nb_match_max,	unsigned& nb_match_min,	unsigned& nb_volume_max,
-	unsigned& nb_volume_min, unsigned year, unsigned nb_match, unsigned nb_volume)
+	unsigned long long& somme_nb_match, unsigned long long& somme_nb_volume, 
+	unsigned long long& mean_pondere_match,
+	unsigned long long& mean_pondere_volume, unsigned& year_max, unsigned& year_min,
+	unsigned long long& nb_match_max,	unsigned long long& nb_match_min, unsigned long long& nb_volume_max,
+	unsigned long long& nb_volume_min, unsigned long long year, unsigned long long nb_match, 
+	unsigned long long nb_volume)
 {	
 	// find a new ngram so we write the precedent (except for the 1st line of the file)
 	if( ngram != precedent_ngram && precedent_ngram != "" )
 	{
 		fprintf(output, 
-			"%s\t%d\t%d\t%d\t%.2f\t%.2f\t%d\t%d\t%d\t%d\t%d\t%d\n", 
+			"%s\t%d\t%llu\t%llu\t%.2lf\t%.2lf\t%d\t%d\t%llu\t%llu\t%llu\t%llu\n", 
 			precedent_ngram.c_str(), somme_year, somme_nb_match, 
-			somme_nb_volume, mean_pondere_match/static_cast<float>(somme_nb_match), 
-			mean_pondere_volume/static_cast<float>(somme_nb_volume), 
+			somme_nb_volume, mean_pondere_match/static_cast<double>(somme_nb_match), 
+			mean_pondere_volume/static_cast<double>(somme_nb_volume), 
 			year_max, year_min, nb_match_max, nb_match_min, 
 			nb_volume_max, nb_volume_min);
 			
@@ -191,21 +193,21 @@ void treat_file(int thread_id, gzFile large_file, FILE* output, string large_fil
 	string ngram;
 	string precedent_ngram = "";
 	stringstream token("");
-	unsigned year, nb_match, nb_volume;
+	unsigned long long year, nb_match, nb_volume;
 	int err;
 	
 	// for the operations on the lines
 	unsigned somme_year = 0;
-	unsigned somme_nb_match = 0;
-	unsigned somme_nb_volume = 0;
-	float mean_pondere_match = 0;
-	float mean_pondere_volume = 0; 
+	unsigned long long somme_nb_match = 0;
+	unsigned long long somme_nb_volume = 0;
+	unsigned long long mean_pondere_match = 0;
+	unsigned long long mean_pondere_volume = 0; 
 	unsigned year_max = 0;
 	unsigned year_min = 3000;
-	unsigned nb_match_max = 0;
-	unsigned nb_match_min = 100000;
-	unsigned nb_volume_max = 0;
-	unsigned nb_volume_min = 100000;
+	unsigned long long nb_match_max = 0;
+	unsigned long long nb_match_min = ULLONG_MAX;
+	unsigned long long nb_volume_max = 0;
+	unsigned long long nb_volume_min = ULLONG_MAX;
 	bool one_valid_line = false;
 							
 	while(1)
@@ -265,10 +267,10 @@ void treat_file(int thread_id, gzFile large_file, FILE* output, string large_fil
 	if( one_valid_line && !file_not_entirely_read(token) )
 	{
 		fprintf(output, 
-			"%s\t%d\t%d\t%d\t%.2f\t%.2f\t%d\t%d\t%d\t%d\t%d\t%d\n", 
+			"%s\t%d\t%llu\t%llu\t%.2lf\t%.2lf\t%d\t%d\t%llu\t%llu\t%llu\t%llu\n", 
 			ngram.c_str(), somme_year, somme_nb_match, somme_nb_volume, 
-			mean_pondere_match/static_cast<float>(somme_nb_match), 
-			mean_pondere_volume/static_cast<float>(somme_nb_volume), 
+			mean_pondere_match/static_cast<double>(somme_nb_match), 
+			mean_pondere_volume/static_cast<double>(somme_nb_volume), 
 			year_max, year_min, nb_match_max, nb_match_min, 
 			nb_volume_max, nb_volume_min);
 	}

@@ -12,23 +12,23 @@ bool collect_tags(std::string token, std::string& tag,
 	std::vector<std::string>& accepted_tags, unsigned nb_ngrams);
 
 bool update_elements(unsigned position, bool& good_tags, std::string token, 
-	std::string& tags, std::vector<std::string>& accepted_tags, unsigned& nb_year,
-	unsigned& nb_match, unsigned& nb_volume, float& mean_pondere_match,
-	float& mean_pondere_volume, unsigned& year_max, unsigned& year_min,
-	unsigned& nb_match_max, unsigned& nb_match_min, 
-	unsigned& nb_volume_max, unsigned nb_ngrams);
+	std::string& tags, std::vector<std::string>& accepted_tags, unsigned long long& nb_year,
+	unsigned long long& nb_match, unsigned long long& nb_volume, double& mean_pondere_match,
+	double& mean_pondere_volume, unsigned& year_max, unsigned& year_min,
+	unsigned long long& nb_match_max, unsigned long long& nb_match_min, 
+	unsigned long long& nb_volume_max, unsigned nb_ngrams);
 
 void update_tag_grams(std::map<std::string, Data*>& tags_to_data, std::string tags, 
-	unsigned nb_year, unsigned nb_match, unsigned nb_volume, float mean_pondere_match,
-	float mean_pondere_volume, unsigned year_max, unsigned year_min,
-	unsigned nb_match_max, unsigned nb_match_min, 
-	unsigned nb_volume_max, unsigned nb_volume_min);
+	unsigned long long nb_year, unsigned long long nb_match, unsigned long long nb_volume, double mean_pondere_match,
+	double mean_pondere_volume, unsigned year_max, unsigned year_min,
+	unsigned long long nb_match_max, unsigned long long nb_match_min, 
+	unsigned long long nb_volume_max, unsigned long long nb_volume_min);
 	
 void update_tag_grams(std::map<std::string, Data*>& tags_to_data, std::string tags, 
 	unsigned long long nb_year, unsigned long long nb_match, 
 	unsigned long long nb_volume, unsigned year_max, unsigned year_min,
-	unsigned nb_match_max, unsigned nb_match_min, 
-	unsigned nb_volume_max, unsigned nb_volume_min);
+	unsigned long long nb_match_max, unsigned long long nb_match_min, 
+	unsigned long long nb_volume_max, unsigned long long nb_volume_min);
 	
 void update_tag_grams_safe(std::mutex& map_mutex, std::map<std::string, Data*>& tags_to_data,
 	std::map<std::string, Data*>& tags_to_data_file);

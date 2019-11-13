@@ -87,7 +87,7 @@ bool valid_ngram(string ngram, vector<string>& forbidden_characters, vector<stri
  * \return True if the line is valid, else false.
  */
 bool valid_line(string line, string& ngram, 
-	unsigned& year, unsigned& nb_match, unsigned& nb_volume, 
+	unsigned long long& year, unsigned long long& nb_match, unsigned long long& nb_volume, 
 	vector<string>& forbidden_characters, 
 	vector<string>& accepted_tags, 
 	unsigned nb_ngram, unsigned min_year_defined)
@@ -114,17 +114,17 @@ bool valid_line(string line, string& ngram,
 		//year
 		else if(position == 2)
 		{
-			year = stoi( token );
+			year = stoull( token );
 			if(year < min_year_defined)
 				return false;
 		}
 		else if(position == 3)
-			nb_match = stoi( token );
+			nb_match = stoull( token );
 	}
 	if(line != "") // ce qu'il reste (le dernier élément de la ligne)
 	{
 		++ position;
-		nb_volume = stoi( line );
+		nb_volume = stoull( line );
 	}
 	
 	return position==4;

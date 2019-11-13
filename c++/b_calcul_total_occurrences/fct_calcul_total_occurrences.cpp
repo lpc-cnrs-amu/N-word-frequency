@@ -105,7 +105,7 @@ void treat_occurrences(FILE* input, string& large_filename,
 	char buffer[LINE_SIZE];
 	unsigned position;
 	size_t pos;
-	unsigned match;
+	unsigned long long match;
 	unsigned cpt_line = 0;
 	string delimiter("\t");
 	string token;
@@ -127,7 +127,7 @@ void treat_occurrences(FILE* input, string& large_filename,
 			line.erase(0, pos + delimiter.length());
 			
 			if( position == 3 )
-				match = stoi( token );
+				match = stoull( token );
 		}
 		if( line != "" )
 			++ position;

@@ -4,8 +4,8 @@ using namespace std;
 using namespace std::chrono;
 
 bool calcul_most_frequent(string large_filename, 
-	map<string, float>& most_frequent_ngrams, unsigned nb_sentences,
-	string& key_min, float& freq_min)
+	map<string, long double>& most_frequent_ngrams, unsigned nb_sentences,
+	string& key_min, long double& freq_min)
 {
 	FILE* input = fopen(large_filename.c_str(), "r");
 	if( input == NULL )
@@ -25,10 +25,10 @@ bool calcul_most_frequent(string large_filename,
 
 
 void calcul_handler(vector<string>& filenames, 
-	map<string, float>& most_frequent_ngrams, unsigned nb_sentences)
+	map<string, long double>& most_frequent_ngrams, unsigned nb_sentences)
 {
 	string key_min("");
-	float freq_min(999999);
+	long double freq_min(999999);
 	for(unsigned i=0; i<filenames.size(); ++i)
 		if( !calcul_most_frequent(filenames[i], most_frequent_ngrams, 
 			nb_sentences, key_min, freq_min) )
@@ -61,7 +61,7 @@ int main(int argc, char** argv)
 	
 	// Calculate the total nb of occurrences with treated files
 	vector<string> filenames;
-	map<string, float> most_frequent_ngrams;
+	map<string, long double> most_frequent_ngrams;
 	collect_filenames(filenames, path_to_frequences_files, "_frequences");
 	calcul_handler(filenames, most_frequent_ngrams, nb_sentences);
 	

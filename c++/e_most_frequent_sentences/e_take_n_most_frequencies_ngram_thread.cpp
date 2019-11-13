@@ -8,8 +8,8 @@ mutex print_mutex;
 mutex map_mutex;
 
 void calcul_most_frequent(unsigned thread_id, QueueSafe<string>& queue_filenames, 
-	map<string, float>& most_frequent_ngrams, unsigned nb_sentences, 
-	string& key_min, float& freq_min)
+	map<string, long double>& most_frequent_ngrams, unsigned nb_sentences, 
+	string& key_min, long double& freq_min)
 {
 	string large_filename;
 			
@@ -26,9 +26,9 @@ void calcul_most_frequent(unsigned thread_id, QueueSafe<string>& queue_filenames
 		}
 		print_message_safe(print_mutex, thread_id, "start", large_filename);
 		
-		map<string, float> most_frequent_ngrams_tmp;
+		map<string, long double> most_frequent_ngrams_tmp;
 		string key_min_tmp(""); 
-		float freq_min_tmp(999999);
+		long double freq_min_tmp(999999);
 		treat_most_freq(input, large_filename, most_frequent_ngrams_tmp, 
 			nb_sentences, key_min_tmp, freq_min_tmp);
 		
@@ -68,9 +68,9 @@ int main(int argc, char** argv)
 	
 	// Calculate the total nb of occurrences with treated files
 	QueueSafe<string> queue_filenames;
-	map<string, float> most_frequent_ngrams;
+	map<string, long double> most_frequent_ngrams;
 	string key_min("");
-	float freq_min(999999);
+	long double freq_min(999999);
 	unsigned nb_cores = std::thread::hardware_concurrency();
 	vector<thread> threads;
 	collect_filenames(queue_filenames, path_to_frequences_files, "_frequences");

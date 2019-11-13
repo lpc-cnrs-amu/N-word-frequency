@@ -18,7 +18,7 @@ bool write_output_frequences_tags_grams(const char* filename, unsigned long long
 	for(auto it=tags_to_data.begin(); it != tags_to_data.end(); ++it)
 	{
 		fprintf(output, 
-			"%s\t%llu\t%llu\t%llu\t%.2f\t%.2f\t%d\t%d\t%d\t%d\t%d\t%d\t%.8e\t%.8e\n", 
+			"%s\t%llu\t%llu\t%llu\t%.2lf\t%.2lf\t%d\t%d\t%llu\t%llu\t%llu\t%llu\t%.8Le\t%.8Le\n", 
 			it->first.c_str(), 
 			it->second->get_somme_year(), 
 			it->second->get_somme_nb_match(), 
@@ -75,13 +75,12 @@ bool collect_tags(string token, string& tag,
 	return true;
 }
 
-
 bool update_elements(unsigned position, bool& good_tags, string token, 
-	string& tags, vector<string>& accepted_tags, unsigned& nb_year,
-	unsigned& nb_match, unsigned& nb_volume, float& mean_pondere_match,
-	float& mean_pondere_volume, unsigned& year_max, unsigned& year_min,
-	unsigned& nb_match_max, unsigned& nb_match_min, 
-	unsigned& nb_volume_max, unsigned nb_ngrams)
+	string& tags, vector<string>& accepted_tags, unsigned long long& nb_year,
+	unsigned long long& nb_match, unsigned long long& nb_volume, double& mean_pondere_match,
+	double& mean_pondere_volume, unsigned& year_max, unsigned& year_min,
+	unsigned long long& nb_match_max, unsigned long long& nb_match_min, 
+	unsigned long long& nb_volume_max, unsigned nb_ngrams)
 {
 	switch(position)
 	{
@@ -90,23 +89,23 @@ bool update_elements(unsigned position, bool& good_tags, string token,
 			return true;
 			break;
 		case 2:
-			nb_year = stoi( token );
+			nb_year = stoull( token );
 			return true;
 			break;
 		case 3:
-			nb_match = stoi( token );
+			nb_match = stoull( token );
 			return true;
 			break;
 		case 4:
-			nb_volume = stoi( token );
+			nb_volume = stoull( token );
 			return true;
 			break;
 		case 5:
-			mean_pondere_match = stof( token );
+			mean_pondere_match = stod( token );
 			return true;
 			break;
 		case 6:
-			mean_pondere_volume = stof( token );
+			mean_pondere_volume = stod( token );
 			return true;
 			break;
 		case 7:
@@ -118,15 +117,15 @@ bool update_elements(unsigned position, bool& good_tags, string token,
 			return true;
 			break;
 		case 9:
-			nb_match_max = stoi( token );
+			nb_match_max = stoull( token );
 			return true;
 			break;
 		case 10:
-			nb_match_min = stoi( token );
+			nb_match_min = stoull( token );
 			return true;
 			break;
 		case 11:
-			nb_volume_max = stoi( token );
+			nb_volume_max = stoull( token );
 			return true;
 			break;
 		default:
@@ -137,10 +136,10 @@ bool update_elements(unsigned position, bool& good_tags, string token,
 }
 
 void update_tag_grams(map<std::string, Data*>& tags_to_data, string tags, 
-	unsigned nb_year, unsigned nb_match, unsigned nb_volume, float mean_pondere_match,
-	float mean_pondere_volume, unsigned year_max, unsigned year_min,
-	unsigned nb_match_max, unsigned nb_match_min, 
-	unsigned nb_volume_max, unsigned nb_volume_min)
+	unsigned long long nb_year, unsigned long long nb_match, unsigned long long nb_volume, double mean_pondere_match,
+	double mean_pondere_volume, unsigned year_max, unsigned year_min,
+	unsigned long long nb_match_max, unsigned long long nb_match_min, 
+	unsigned long long nb_volume_max, unsigned long long nb_volume_min)
 {
 	if( tags_to_data.find(tags) == tags_to_data.end() )
 		tags_to_data[tags] = new Data();
@@ -158,12 +157,11 @@ void update_tag_grams(map<std::string, Data*>& tags_to_data, string tags,
 	tags_to_data[tags]->try_and_change_volume_min(nb_volume_min);	
 }
 
-		
-void update_tag_grams(map<std::string, Data*>& tags_to_data, string tags, 
+void update_tag_grams(map<string, Data*>& tags_to_data, string tags, 
 	unsigned long long nb_year, unsigned long long nb_match, 
 	unsigned long long nb_volume, unsigned year_max, unsigned year_min,
-	unsigned nb_match_max, unsigned nb_match_min, 
-	unsigned nb_volume_max, unsigned nb_volume_min)
+	unsigned long long nb_match_max, unsigned long long nb_match_min, 
+	unsigned long long nb_volume_max, unsigned long long nb_volume_min)
 {
 	if( tags_to_data.find(tags) == tags_to_data.end() )
 		tags_to_data[tags] = new Data();
@@ -203,7 +201,6 @@ void update_tag_grams_safe(mutex& map_mutex, map<std::string, Data*>& tags_to_da
 	}
 }
 
-
 void treat_occurrences_tag_grams(map<std::string, Data*>& tags_to_data, vector<string>& accepted_tags, 
 	FILE* input, unsigned nb_ngrams, string& large_filename)
 {
@@ -216,17 +213,17 @@ void treat_occurrences_tag_grams(map<std::string, Data*>& tags_to_data, vector<s
 	size_t pos;
 	bool good_tags = false;
 	
-	unsigned nb_year = 0;
-	unsigned nb_match = 0;
-	unsigned nb_volume = 0;
-	float mean_pondere_match = 0;
-	float mean_pondere_volume = 0;
+	unsigned long long nb_year = 0;
+	unsigned long long nb_match = 0;
+	unsigned long long nb_volume = 0;
+	double mean_pondere_match = 0;
+	double mean_pondere_volume = 0;
 	unsigned year_max = 0;
 	unsigned year_min = 3000;
-	unsigned nb_match_max = 0;
-	unsigned nb_match_min = 100000;
-	unsigned nb_volume_max = 0;
-	unsigned nb_volume_min = 100000;
+	unsigned long long nb_match_max = 0;
+	unsigned long long nb_match_min = ULLONG_MAX;
+	unsigned long long nb_volume_max = 0;
+	unsigned long long nb_volume_min = ULLONG_MAX;
 
 	while( fgets(buffer, sizeof(buffer), input) )
 	{
@@ -254,7 +251,7 @@ void treat_occurrences_tag_grams(map<std::string, Data*>& tags_to_data, vector<s
 		}
 		if( line != "" )
 		{
-			nb_volume_min = stoi( line );
+			nb_volume_min = stoull( line );
 			++ position;
 		}
 		if( position != 12 )

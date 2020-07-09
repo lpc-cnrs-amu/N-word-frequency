@@ -111,11 +111,9 @@ void explode_ngram(string& precedent_ngram, vector<string>& words,
 	size_t pos = 0;
 	for (unsigned i=0; i<words_tags.size(); ++i)
 	{		
-		while ( (pos = words_tags[i].find(delimiter)) != std::string::npos )
-		{
-			words.push_back( words_tags[i].substr(0, pos) );
-			words_tags[i].erase(0, pos + delimiter.length());
-		}
+		pos = words_tags[i].find_last_of(delimiter);
+		words.push_back( words_tags[i].substr(0, pos) );
+		words_tags[i].erase(0, pos + delimiter.length());
 		tags.push_back( words_tags[i] );
 	}
 }

@@ -96,7 +96,7 @@ int main(int argc, char** argv)
 	if( nb_cores <= 0 )
 		nb_cores = 5;
 	collect_filenames(queue_filenames, path_to_gz_pos_files, ".gz");
-	for(unsigned i=0; i<nb_cores; ++i)
+	for(unsigned i=0; i<(unsigned)nb_cores; ++i)
 		threads.emplace_back( [&]{calcul_occurrences( i+1, 
 			queue_filenames, tags_to_data, accepted_tags, nb_ngrams, min_year_defined); } );
 	for(auto& t: threads)

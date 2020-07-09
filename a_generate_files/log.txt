@@ -1,0 +1,15 @@
+/mnt/c/Users/Marjorie/Documents/git_repo/N-word-frequency/files/
+/mnt/c/Users/Marjorie/Documents/git_repo/N-word-frequency/files/
+2
+1970
+1
+/mnt/c/Users/Marjorie/Documents/git_repo/N-word-frequency/files/googlebooks-fre-all-2gram-20120701-a__treated
+/mnt/c/Users/Marjorie/Documents/git_repo/N-word-frequency/files/googlebooks-fre-all-2gram-20120701-ab_treated
+/mnt/c/Users/Marjorie/Documents/git_repo/N-word-frequency/files/googlebooks-fre-all-2gram-20120701-aa_treated
+Thread 4 start /mnt/c/Users/Marjorie/Documents/git_repo/N-word-frequency/files/googlebooks-fre-all-2gram-20120701-a_.gz
+Thread 3 start /mnt/c/Users/Marjorie/Documents/git_repo/N-word-frequency/files/googlebooks-fre-all-2gram-20120701-ab.gz
+Thread 2 start /mnt/c/Users/Marjorie/Documents/git_repo/N-word-frequency/files/googlebooks-fre-all-2gram-20120701-aa.gz
+Thread 4 finish /mnt/c/Users/Marjorie/Documents/git_repo/N-word-frequency/files/googlebooks-fre-all-2gram-20120701-a_.gz
+Thread 2 finish /mnt/c/Users/Marjorie/Documents/git_repo/N-word-frequency/files/googlebooks-fre-all-2gram-20120701-aa.gz
+Thread 3 finish /mnt/c/Users/Marjorie/Documents/git_repo/N-word-frequency/files/googlebooks-fre-all-2gram-20120701-ab.gz
+Time taken : 0 minutes

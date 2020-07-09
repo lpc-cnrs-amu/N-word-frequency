@@ -94,7 +94,7 @@ int main(int argc, char** argv)
 		nb_cores = 5;
 	vector<thread> threads;	
 	collect_filenames(queue_filenames, path_to_treated_files, "_treated");
-	for(unsigned i=0; i<nb_cores; ++i)
+	for(unsigned i=0; i<(unsigned)nb_cores; ++i)
 		threads.emplace_back( [&]{calcul_freq( i+1, queue_filenames, 
 			path_to_output_files, total_match, total_volume, nb_ngram ); } );
 	for(auto& t: threads)

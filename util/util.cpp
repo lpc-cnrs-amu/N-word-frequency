@@ -12,21 +12,21 @@ bool has_suffix(const char* name, string& suffix)
 
 void collect_filenames(QueueSafe<string>& queue_filenames, string& path_to_files, string suffix)
 {
-	DIR *pdir = NULL; //pointeur vers un dossier
-    struct dirent *pent = NULL; //structure nécessaire a la lecture de répertoire, elle contiendra le nom du/des fichier
+	DIR *pdir = NULL; 
+    struct dirent *pent = NULL; 
     string filename("");
                                            
     pdir = opendir (path_to_files.c_str()); 
                                            
-    if (pdir == NULL) //si il y a eu un problème pour l'ouverture du répertoire
+    if (pdir == NULL)
     {
         cout << "Erreur d'ouverture du repertoire" << endl; 
         return ;                                  
     }
     
-    while (pent = readdir (pdir)) //tant qu'il reste quelque chose qu'on a pas lister
+    while ( (pent = readdir (pdir)) )
     {
-        if (pent == NULL) //si il y a eu un probleme dans l'ouverture d'un fichier du repertoire
+        if (pent == NULL)
         {
 			cout << "Erreur d'ouverture d'un fichier contenu dans le repertoire" << endl;
 			return ; 
@@ -42,21 +42,21 @@ void collect_filenames(QueueSafe<string>& queue_filenames, string& path_to_files
 }
 void collect_filenames(vector<string>& filenames, string& path_to_files, string suffix)
 {
-	DIR *pdir = NULL; //pointeur vers un dossier
-    struct dirent *pent = NULL; //structure nécessaire a la lecture de répertoire, elle contiendra le nom du/des fichier
+	DIR *pdir = NULL;
+    struct dirent *pent = NULL;
     string filename("");
                                            
     pdir = opendir (path_to_files.c_str()); 
                                            
-    if (pdir == NULL) //si il y a eu un problème pour l'ouverture du répertoire
+    if (pdir == NULL)
     {
         cout << "Erreur d'ouverture du repertoire" << endl; 
         return ;                                  
     }
     
-    while (pent = readdir (pdir)) //tant qu'il reste quelque chose qu'on a pas lister
+    while ( (pent = readdir (pdir)) )
     {
-        if (pent == NULL) //si il y a eu un probleme dans l'ouverture d'un fichier du repertoire
+        if (pent == NULL)
         {
 			cout << "Erreur d'ouverture d'un fichier contenu dans le repertoire" << endl;     
 			return ; 

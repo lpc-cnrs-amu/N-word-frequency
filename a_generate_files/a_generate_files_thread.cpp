@@ -106,7 +106,7 @@ int main(int argc, char** argv)
 	vector<thread> threads;
 
 	collect_filenames(queue_filenames, path_to_gz, ".gz");
-	for(unsigned i=0; i<nb_cores; ++i)
+	for(unsigned i=0; i<(unsigned)nb_cores; ++i)
 	{
 		threads.emplace_back( [&]{generate_file( i+1, queue_filenames, 
 			path_to_output, forbidden_characters, accepted_tags, 

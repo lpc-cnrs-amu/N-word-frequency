@@ -90,7 +90,7 @@ int main(int argc, char** argv)
 		
 	vector<thread> threads;
 	collect_filenames(queue_filenames, path_to_treated_files, "_treated");
-	for(unsigned i=0; i<nb_cores; ++i)
+	for(unsigned i=0; i<(unsigned)nb_cores; ++i)
 		threads.emplace_back( [&]{calcul_occurrences( i+1, 
 			queue_filenames, occurrences, nb_ngram); } );
 	for(auto& t: threads)

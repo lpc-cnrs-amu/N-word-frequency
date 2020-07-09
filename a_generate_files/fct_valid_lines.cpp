@@ -53,22 +53,22 @@ bool valid_ngram(string ngram, vector<string>& forbidden_characters,
 	size_t pos = 0;
 	for (unsigned i=0; i<words_tags.size(); ++i)
 	{		
-		if ( words_tags[i].find(delimiter) == std::string::npos )
+		pos = words_tags[i].find_last_of(delimiter);
+		if ( pos == std::string::npos )
 			return false;
-		
-		while ( (pos = words_tags[i].find(delimiter)) != std::string::npos )
-		{
-			word = words_tags[i].substr(0, pos);
-			if( std::find(forbidden_characters.begin(), forbidden_characters.end(), word) != forbidden_characters.end() )
-				return false;
-			if( no_number && std::regex_search(word, match_numeric, regex_numeric) )
-				return false;
-			words_tags[i].erase(0, pos + delimiter.length());
-		}
+			
+		word = words_tags[i].substr(0, pos);
+		if( std::find(forbidden_characters.begin(), forbidden_characters.end(), word) != forbidden_characters.end() )
+			return false;
+		if( no_number && std::regex_search(word, match_numeric, regex_numeric) )
+			return false;
+		words_tags[i].erase(0, pos + delimiter.length());
 		tag = words_tags[i];
 		if( std::find(accepted_tags.begin(), accepted_tags.end(), tag) == accepted_tags.end() )
 			return false;
+
 	}
+	
 	return true;		
 }
 

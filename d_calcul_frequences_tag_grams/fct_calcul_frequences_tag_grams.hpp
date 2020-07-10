@@ -4,7 +4,7 @@
 #include <map>
 #include "../util/util.hpp"
 #include "../util/Data.hpp"
-#include "../zlib1211/zlib-1.2.11/zlib.h"
+#include "../zlib-1.2.11/zlib.h"
 
 bool write_output_frequences_tags_grams(const char* filename, unsigned long long total_match, 
 	unsigned long long total_volume, std::map<std::string, Data*>& tags_to_data);

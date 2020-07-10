@@ -1,7 +1,7 @@
 #ifndef FCT_GENERATE_FILES_HPP
 #define FCT_GENERATE_FILES_HPP
 
-#include "../zlib1211/zlib-1.2.11/zlib.h"
+#include "../zlib-1.2.11/zlib.h"
 #include "../util/util.hpp"
 #include <regex>
 

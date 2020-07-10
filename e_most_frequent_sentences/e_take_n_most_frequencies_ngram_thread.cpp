@@ -78,7 +78,7 @@ int main(int argc, char** argv)
 		nb_cores = 5;
 	vector<thread> threads;
 	collect_filenames(queue_filenames, path_to_frequences_files, "_frequences");
-	for(unsigned i=0; i<nb_cores; ++i)
+	for(unsigned i=0; i<(unsigned)nb_cores; ++i)
 		threads.emplace_back( [&]{calcul_most_frequent( i+1, 
 			queue_filenames, most_frequent_ngrams, nb_sentences,
 			key_min, freq_min, nb_ngram); } );

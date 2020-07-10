@@ -7,7 +7,7 @@ C++ programs used to generate N-word-frequency database from the <a href="https:
 
 ## Download N-gram Google Books
 
-First, download <a href="http://storage.googleapis.com/books/ngrams/books/datasetsv2.html">The Google Books Ngram Corpus</a> you need (with the corresponding totalcounts file) and put all the files in a directory, by number of ngram. For example, if you download the English 2grams, the English 3grams, and the French 2grams corpora, make sure to have a directory for each corpora.
+First, download <a href="http://storage.googleapis.com/books/ngrams/books/datasetsv2.html">The Google Books Ngram Corpus</a> you need (with the corresponding totalcounts file) and put all the files in a directory (but separate the Part-of-Speech corpora into another directory for the [d_calcul_frequences_tag_grams](#d_) part). For example, if you download the English 2grams, the English 3grams, and the French 2grams corpora, make sure to have a directory for each corpora.
 If you use MacOS, you can download them with -- --.
 
 ## On Windows 10
@@ -15,28 +15,26 @@ If you use MacOS, you can download them with -- --.
 The programs work on a Linux environment. You can install a <a href="https://www.virtualbox.org/wiki/Downloads">virtual machine</a> to use Ubuntu for example, or you can install Ubuntu Bash.
 
 Installing Ubuntu Bash:
-1. You need to have a Build version greater than 14393 and Windows 10 64-bits. !!Image ici!!
+1. You need to have Windows 10 64-bits.
 2. Open Settings app and go to Update & Security -> For Developers and choose the “Developer Mode” radio button.
 3. Go to the Control Panel -> Programs and click “Turn Windows feature on or off”. Enable “Windows Subsystem for Linux(Beta)”. When you click OK, you will be prompted to reboot. Click “Restart Now” to reboot your PC.
 4. Open the Microsoft Store, search "Ubuntu 18.04 LTS" and download it. 
 5. Open the Ubuntu 18.04 terminal, enter an user name and a password.
 
-The `C:\` drive is mounted as `/mnt/c/`, `D:\` is mounted as `/mnt/d/`, etc. To access your Documents, you can type `cd /mnt/c/Users/your_name/Documents/` by replacing your_name by your user name.
+The `C:\` drive is mounted as `/mnt/c/`, `D:\` is mounted as `/mnt/d/`, etc. To access your Documents, you can type `cd /mnt/c/Users/your_name/Documents/` by replacing your_name by your Windows user name.
 You can now read the "On Linux" part to complete others installations.
 
 ## On Linux
-
--S'il y a des problèmes de fichier les mettre en format unix:  sudo apt-get install dos2unix puis dos2unix nom_fichier -
 
 1. Open a terminal.
 2. Run `sudo apt-get update`
 3. Install g++ `sudo apt-get install g++`
 4. Install make `sudo apt-get install make`
-5. <a href="https://zlib.net/zlib1211.zip">Download zlib</a> and extract it to the same programs repository (zlib's extracted directory have to be in this github repository).
-6. Go to the zlib directory and run ./configure: `cd zlib1211/zlib-1.2.11/` and `./configure`
+5. <a href="https://zlib.net/zlib1211.zip">Download zlib</a> and extract it to the same programs repository (zlib's extracted directory have to be in this github repository). You can extract it with 7-Zip > Extract Here, or with the command `unzip zlib1211.zip` in the terminal.
+6. Go to the zlib directory and run ./configure: `cd zlib-1.2.11/` and `./configure`
 7. Run `sudo make install`
-8. `cd ../..` and `sudo chmod 777 make_all.sh`
-9. `./make_all.sh`
+8. Run `cd ../` and `sudo chmod 777 make_all.sh`
+9. Run `./make_all.sh`
 
 ## On MacOS
 
@@ -47,6 +45,24 @@ You can now read the "On Linux" part to complete others installations.
 For each programs, there are a multithreading and a non-multithreading version. Multithreading is used to reduce computation time. We recommand to use the multithreading version if there are a lot of files to process.
 
 ## a_generate_files
+This program takes into account only ngrams with words tagged with :
+NOUN, VERB, ADJ, ADV, PRON, DET, ADP, CONJ, PRT and words different
+than :
+
+<table>   
+		<tr> 
+			<td>,</td>  
+			<td>.</td>  
+			<td>?</td>
+			<td>!</td>
+			<td>...</td>
+			<td>;</td>
+			<td>:</td>
+			<td>"</td>
+			<td>'</td>
+		</tr> 
+</table>
+
 From .gz files, it generates ngrams files containing for each unique ngram its  :
 * number of years
 * total occurrence through the years
@@ -60,9 +76,6 @@ From .gz files, it generates ngrams files containing for each unique ngram its  
 * number of volume max
 * number of volume min
 
-\tTake into account only ngrams with words tagged with :\n\
-\tNOUN, VERB, ADJ, ADV, PRON, DET, ADP, CONJ, PRT and words different \
-than:\n\t',', '.', '?', '!', '...', ';', ':', '\"', ' ', '''\n\n"
 
 Put in the config file :
 <pre><code>
@@ -86,12 +99,12 @@ no_number = 1
 END
 </code></pre>
 
-Then run `a_generate_files/./generate_treated_files_thread config.ini > log_a_generate_file.txt`. 
+Then run `a_generate_files/./generate_treated_files_thread config.ini > log_a_generate_file.txt` to use the multithreading version, or `a_generate_files/./generate_treated_files config.ini > log_a_generate_file.txt` to use the non-multithreading version. 
 The `> log_a_generate_file.txt` part is used to write what the program do in the file log_a_generate_file.txt (if the file doesn't exist, it will be created) in addition to writing into the terminal. Of course you can named this file how you want. 
 
 ## b_calcul_total_occurrences
 
-Uses the files generated by a_generate_files to compute the total number of ngrams (sum of all unique ngrams' occurrence). Read the total number of volumes with the totalcounts file. Writes these two numbers in a file.
+Uses the files generated by a_generate_files to compute the total number of ngrams (sum of all unique ngrams' occurrence). Read the total number of volumes with the totalcounts file. Writes these two numbers in a file. It will be used to compute frequencies.
 
 Put in the config file :
 <pre><code>
@@ -115,12 +128,12 @@ nb_ngram = 2
 END
 </code></pre>
 
-Then run `b_calcul_total_occurrences/./calcul_occurences_thread config.ini > log_b_calcul_occurrences.txt`.
+Then run `b_calcul_total_occurrences/./calcul_occurences_thread config.ini > log_b_calcul_occurrences.txt` to use the multithreading version, or `b_calcul_total_occurrences/./calcul_occurences config.ini > log_b_calcul_occurrences.txt` to use the non-multithreading version. 
 The `> log_b_calcul_occurrences.txt` part is used to write what the program do in the file log_b_calcul_occurrences.txt (if the file doesn't exist, it will be created) in addition to writing into the terminal. Of course you can named this file how you want. 
 
 ## c_calcul_frequences
 
-Compute the frequence of each unique ngram generated by a_generate_files, thanks to the file generated by b_calcul_total_occurrences.
+Compute the frequency of each unique ngram generated by a_generate_files, thanks to the file generated by b_calcul_total_occurrences.
 
 Put in the config file :
 <pre><code>
@@ -142,7 +155,10 @@ nb_ngram = 2
 END
 </code></pre>
 
-## d_calcul_frequences_tag_grams
+Then run `c_calcul_frequences/./calcul_frequences_thread config.ini > log_c_calcul_frequences.txt` to use the multithreading version, or `c_calcul_frequences/./calcul_frequences config.ini > log_c_calcul_frequences.txt` to use the non-multithreading version. 
+The `> log_c_calcul_frequences.txt` part is used to write what the program do in the file log_c_calcul_frequences.txt (if the file doesn't exist, it will be created) in addition to writing into the terminal. Of course you can named this file how you want. 
+
+## <a name="d_"></a>d_calcul_frequences_tag_grams
 
 Compute the frequence of each tag-grams from the Google Books Ngram Corpus .gz files. They are named \_ADJ\_, \_ADP\_, \_ADV\_, \_CONJ\_, \_DET\_, \_NOUN\_, \_PRON\_, \_PRT\_, \_VERB\_. Put them all in the same directory. The output file is a .csv containing, for each tag-gram :
 * number of years
@@ -180,3 +196,6 @@ nb_ngram = 2
 min_year = 1970
 END
 </code></pre>
+
+Then run `d_calcul_frequences_tag_grams/./calcul_frequences_tag_grams_thread config.ini > log_d_calcul_frequences_tag_grams.txt` to use the multithreading version, or `d_calcul_frequences_tag_grams/./calcul_frequences_tag_grams config.ini > log_d_calcul_frequences_tag_grams.txt` to use the non-multithreading version. 
+The `> log_d_calcul_frequences_tag_grams.txt` part is used to write what the program do in the file log_d_calcul_frequences_tag_grams.txt (if the file doesn't exist, it will be created) in addition to writing into the terminal. Of course you can named this file how you want. 

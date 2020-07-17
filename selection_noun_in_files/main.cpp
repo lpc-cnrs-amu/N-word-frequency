@@ -15,7 +15,7 @@ mutex print_mutex;
 bool is_upper(const std::wstring& token_wstr)
 {
 	unsigned i = 0;
-	while(token_wstr[i] != END_OF_WORD )
+	while( token_wstr[i] != END_OF_WORD )
 	{
 		if( iswupper(token_wstr[i]) )
 			return true;
@@ -24,6 +24,13 @@ bool is_upper(const std::wstring& token_wstr)
 	return false;
 }
 
+/*  - un des Ngrams doit être “item_NOUN”
+	- pas de “_DET” à la fin
+	- pas d’apostrophe au tout début ni à la toute fin (“‘“ à la premiere lettre du GRAM1 et à la dernière lettre du GRAM5)
+	- pas de lettre majuscule dans tous les Ngrams
+	- pas de signe de ponctuation dans tous les Ngrams (sauf les apostrophe)
+	- pas de nombre dans tous les Ngrams
+*/
 void treat_file(FILE* input, FILE* output, Tokeniseur& arbre, 
 	string& large_filename, unsigned nb_ngram, regex& regex_ponctuation)
 {
@@ -38,10 +45,8 @@ void treat_file(FILE* input, FILE* output, Tokeniseur& arbre,
 	bool at_least_one_item_noun = false;
 	bool words_ok = true;
 	unsigned count_POS = 0;
-	
 	while( fgets(buffer, sizeof(buffer), input) )
-	{	
-		//cout << "en train de faire: " << buffer << endl;
+	{
 		++cpt_line;
 		line = buffer;
 		position = 0;
@@ -50,44 +55,27 @@ void treat_file(FILE* input, FILE* output, Tokeniseur& arbre,
 		words_ok = true;
 		at_least_one_item_noun = false;
 		count_POS = 0;
-				
-		// cut by \t
-		/*  - un des Ngrams doit être “item_NOUN” OK
-		    - pas de “_DET” à la fin OK
-			- pas d’apostrophe au tout début ni à la toute fin ( “‘“ à la premiere lettre du GRAM1 et à la dernière lettre du GRAM5) OK
-			- pas de lettre majuscule dans tous les Ngrams OK
-			- pas de signe de ponctuation dans tous les Ngrams (sauf les apostrophe)
-			- pas de nombre dans tous les Ngrams OK
-		*/
 		while (words_ok && (pos = line.find(delimiter)) != std::string::npos) 
 		{
 			++ position;
 			token = line.substr(0, pos);
 			line.erase(0, pos + delimiter.length());
-			//cout << token << endl;
 			std::smatch match_ponctuation;
-			
 			if( position <= nb_ngram )
 			{
 				token_wstr = str_to_wstr( token );
 				if( is_upper(token_wstr) || (position == 1 && token[0] == '\'') || (position == nb_ngram && token.back() == '\'') || std::regex_search(token, match_ponctuation, regex_ponctuation) ){
-					//cout << "faux !" << endl;
 					words_ok = false;
-				}
 				else
 					words.push_back( token_wstr );
 			}
 			else if( position > nb_ngram && position <= nb_ngram*2 )
 			{
 				++ count_POS;
-				if( position == nb_ngram*2 && token == "DET" ){
-					//cout << "faux !" << endl;
+				if( position == nb_ngram*2 && token == "DET" )
 					words_ok = false;
-				}
-				if( !at_least_one_item_noun && token == "NOUN" && arbre.search(words[position-nb_ngram-1]) ){
+				if( !at_least_one_item_noun && token == "NOUN" && arbre.search(words[position-nb_ngram-1]) )
 					at_least_one_item_noun = true;
-					//cout << "ok!\n"; 
-				}
 			}
 		}
 		if(words_ok && at_least_one_item_noun)
@@ -100,14 +88,8 @@ void treat_file(FILE* input, FILE* output, Tokeniseur& arbre,
 					 << ") on file " << large_filename << " : " << buffer << "\n";
 			}
 			else
-			{
-				//write line in output
 				fprintf(output, "%s", buffer);
-				//cout << "trouve : " << buffer << endl;
-			}
 		}
-		/*else
-			cout << "mauvaise phrase : " << buffer << endl;*/
 		memset(buffer, 0, sizeof(buffer));
 	}
 }
@@ -122,22 +104,17 @@ void generate_file(unsigned thread_id, Tokeniseur& arbre,
 	{	
 		if( !queue_filenames.try_pop(large_filename) )
 			continue;
-		
 		FILE* input = fopen(large_filename.c_str(), "r");
 		if( input == NULL )
 		{
 			print_message_safe(print_mutex, thread_id, "Impossible to open the file", large_filename);
 			continue;	
 		}
-			
 		FILE* output = get_file(thread_id, large_filename, path_to_output, "_frequences", "_frequencies");
 		if( output == NULL )
 			continue;
-		
 		print_message_safe(print_mutex, thread_id, "start", large_filename);
-		
 		treat_file(input, output, arbre, large_filename, nb_ngram, regex_ponctuation);
-		
 		fclose(input);
 		fclose(output);
 		print_message_safe(print_mutex, thread_id, "finish", large_filename);
@@ -161,11 +138,7 @@ int main(int argc, char **argv)
 	// Construct prefix tree
 	Tokeniseur arbre;
 	arbre.load(argv[1]);
-	cout << "arbre construit\n";
-	/*string m = "cil";
-	wstring wm = str_to_wstr(m);
-	cout << arbre.search(wm) << endl;
-	arbre.delete_tree(arbre.get_root());*/
+	cout << "The tree has been successfuly build\n";
 	
 	// Number of threads
 	int nb_cores = std::thread::hardware_concurrency() - 1;

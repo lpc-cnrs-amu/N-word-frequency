@@ -238,7 +238,6 @@ void treat_file(int thread_id, gzFile large_file, FILE* output, string large_fil
 	unsigned nb_ngrams, unsigned min_year_defined, bool no_number)
 {
 	// to treat the lines
-	//std::regex regex_numeric("^([-+]?[0-9]+)([,.]?[0-9]*([eE]{1}[-+]?[0-9]*)?)$");
 	std::regex regex_numeric("[0-9]+");
 	unsigned char buffer[CHUNK_SIZE];
 	unsigned int unzipped_bytes = 1;

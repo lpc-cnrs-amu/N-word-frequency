@@ -72,6 +72,35 @@ bool valid_ngram(string ngram, vector<string>& forbidden_characters,
 	return true;		
 }
 
+void calcul_occ(unsigned long long& year, unsigned long long& nb_match, 
+	unsigned long long& nb_volume, unsigned min_year_defined, string& line)
+{
+	string token;
+	string delimiter = ",";
+	unsigned position = 0;
+	size_t pos = 0;
+	unsigned long long match;
+	
+	// cut by ,
+	while ((pos = line.find(delimiter)) != std::string::npos) 
+	{
+		++ position;
+		token = line.substr(0, pos);
+		line.erase(0, pos + delimiter.length());
+		
+		if(position == 1 && stoull(token) < min_year_defined)
+			return;
+		else if(position == 2)
+			match = stoull( token );
+	}	
+	if(position == 2 && line != "")
+	{
+		nb_volume += stoull( token );
+		++ year;
+		nb_match += match;
+	}
+}
+
 /*! \brief Says if a line is valid or not. Fills all the elements (ngram, year, occurrence, volume).
  *
  * A line is valid if : 
@@ -116,21 +145,11 @@ bool valid_line(string line, string& ngram,
 				return false;
 			ngram = token;
 		}
-		//year
-		else if(position == 2)
-		{
-			year = stoull( token );
-			if(year < min_year_defined)
-				return false;
-		}
-		else if(position == 3)
-			nb_match = stoull( token );
+		else
+			calcul_occ(year, nb_match, nb_volume, min_year_defined, token);
 	}
 	if(line != "")
-	{
-		++ position;
-		nb_volume = stoull( line );
-	}
+		calcul_occ(year, nb_match, nb_volume, min_year_defined, token);
 	
-	return position==4;
+	return nb_year > 0;
 }

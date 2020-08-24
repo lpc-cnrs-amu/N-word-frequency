@@ -85,6 +85,7 @@ void calcul_occ(unsigned& year, unsigned long long& nb_match,
 	unsigned long long match, vol;
 	unsigned this_year;
 	
+
 	if( std::count(line.begin(), line.end(), ',') != 2 )
 		return;
 	
@@ -119,7 +120,7 @@ void calcul_occ(unsigned& year, unsigned long long& nb_match,
 			match_max = match;
 		if( match < match_min )
 			match_min = match;
-		vol = stoull( token );
+		vol = stoull( line );
 		nb_volume += vol;
 		if( vol > volume_max )
 			volume_max = vol;
@@ -195,8 +196,7 @@ bool valid_line(string line, string& ngram,
 	}
 	if(line != "")
 	{
-		cout << "on est la!!!\n";
-		calcul_occ(year, nb_match, nb_volume, min_year_defined, token, 
+		calcul_occ(year, nb_match, nb_volume, min_year_defined, line, 
 			year_max, year_min, mean_pondere_match, mean_pondere_volume,
 			match_max, match_min, volume_max, volume_min);
 	}

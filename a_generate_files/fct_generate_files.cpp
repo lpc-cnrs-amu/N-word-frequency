@@ -120,9 +120,9 @@ void explode_ngram(string& precedent_ngram, vector<string>& words,
 
 void write_in_file(FILE* output, string& ngram, unsigned& somme_year,
 	unsigned long long& somme_nb_match, unsigned long long& somme_nb_volume, 
-	unsigned long long& mean_pondere_match,
-	unsigned long long& mean_pondere_volume, unsigned& year_max, unsigned& year_min,
-	unsigned long long& nb_match_max,	unsigned long long& nb_match_min, unsigned long long& nb_volume_max,
+	unsigned long long& mean_pondere_match, unsigned long long& mean_pondere_volume, 
+	unsigned& year_max, unsigned& year_min, unsigned long long& nb_match_max, 
+	unsigned long long& nb_match_min, unsigned long long& nb_volume_max,
 	unsigned long long& nb_volume_min)
 {
 	unsigned i;

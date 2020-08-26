@@ -1,6 +1,6 @@
 #include "fct_calcul_total_occurrences.hpp"
 
-#define LINE_SIZE 1024
+#define LINE_SIZE 5000
 
 using namespace std;
 

@@ -1,7 +1,7 @@
 #include <iostream>
 #include <iomanip>
-#include "../util/OccurrencesSafe.hpp"
-#include "../util/util.hpp"
+#include "../../util/OccurrencesSafe.hpp"
+#include "../../util/util.hpp"
 #include "Tokeniseur.hpp"
 #include <regex>
 
@@ -42,19 +42,18 @@ void treat_file(FILE* input, FILE* output, Tokeniseur& arbre,
 	string token;
 	wstring token_wstr;
 	string line("");
-	bool at_least_one_item_noun = false;
 	bool words_ok = true;
 	unsigned count_POS = 0;
+	unsigned count_word = 0;
 	while( fgets(buffer, sizeof(buffer), input) )
 	{
 		++cpt_line;
 		line = buffer;
 		position = 0;
 		pos = 0;
-		vector<wstring> words;
 		words_ok = true;
-		at_least_one_item_noun = false;
 		count_POS = 0;
+		count_word = 0;
 		while (words_ok && (pos = line.find(delimiter)) != std::string::npos) 
 		{
 			++ position;
@@ -64,25 +63,19 @@ void treat_file(FILE* input, FILE* output, Tokeniseur& arbre,
 			if( position <= nb_ngram )
 			{
 				token_wstr = str_to_wstr( token );
-				if( is_upper(token_wstr) || (position == 1 && token[0] == '\'') || (position == nb_ngram && token.back() == '\'') || std::regex_search(token, match_ponctuation, regex_ponctuation) )
+				if( is_upper(token_wstr) || std::regex_search(token, match_ponctuation, regex_ponctuation) || !arbre.search(token_wstr) )
 					words_ok = false;
 				else
-					words.push_back( token_wstr );
+					++ count_word;
 			}
 			else if( position > nb_ngram && position <= nb_ngram*2 )
-			{
 				++ count_POS;
-				if( position == nb_ngram*2 && token == "DET" )
-					words_ok = false;
-				if( !at_least_one_item_noun && token == "NOUN" && arbre.search(words[position-nb_ngram-1]) )
-					at_least_one_item_noun = true;
-			}
 		}
-		if(words_ok && at_least_one_item_noun)
+		if(words_ok)
 		{
 			if( line != "" )
 				++ position;
-			if( position != nb_ngram*2+13 || words.size() != count_POS )
+			if( position != nb_ngram*2+13 || count_POS != 1 || count_word != 1 )
 			{
 				cerr << "WARNING bad line (" << cpt_line 
 					 << ") on file " << large_filename << " : " << buffer << "\n";

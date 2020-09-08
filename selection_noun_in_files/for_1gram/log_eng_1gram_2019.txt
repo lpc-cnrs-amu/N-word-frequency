@@ -1,0 +1,74 @@
+The tree has been successfuly build
+/mnt/d/freq_word_list_eng_noun/1-00001-of-00024_frequencies
+/mnt/d/freq_word_list_eng_noun/1-00000-of-00024_frequencies
+/mnt/d/freq_word_list_eng_noun/1-00003-of-00024_frequencies
+/mnt/d/freq_word_list_eng_noun/1-00002-of-00024_frequencies
+/mnt/d/freq_word_list_eng_noun/1-00004-of-00024_frequencies
+/mnt/d/freq_word_list_eng_noun/1-00005-of-00024_frequencies
+/mnt/d/freq_word_list_eng_noun/1-00006-of-00024_frequencies
+Thread 2 start /mnt/d/freq/1-00001-of-00024_frequences
+/mnt/d/freq_word_list_eng_noun/1-00007-of-00024_frequencies
+/mnt/d/freq_word_list_eng_noun/1-00008-of-00024_frequencies
+/mnt/d/freq_word_list_eng_noun/1-00009-of-00024_frequencies
+/mnt/d/freq_word_list_eng_noun/1-00010-of-00024_frequencies
+/mnt/d/freq_word_list_eng_noun/1-00011-of-00024_frequencies
+/mnt/d/freq_word_list_eng_noun/1-00013-of-00024_frequencies
+/mnt/d/freq_word_list_eng_noun/1-00014-of-00024_frequencies
+/mnt/d/freq_word_list_eng_noun/1-00015-of-00024_frequencies
+/mnt/d/freq_word_list_eng_noun/1-00017-of-00024_frequencies/mnt/d/freq_word_list_eng_noun/1-00016-of-00024_frequencies
+
+/mnt/d/freq_word_list_eng_noun/1-00012-of-00024_frequencies
+/mnt/d/freq_word_list_eng_noun/1-00018-of-00024_frequencies
+Thread 3 start /mnt/d/freq/1-00000-of-00024_frequences
+Thread 5 start /mnt/d/freq/1-00003-of-00024_frequences
+Thread 4 start /mnt/d/freq/1-00002-of-00024_frequences
+Thread 6 start /mnt/d/freq/1-00004-of-00024_frequences
+Thread 7 start /mnt/d/freq/1-00005-of-00024_frequences
+Thread 8 start /mnt/d/freq/1-00006-of-00024_frequences
+Thread 9 start /mnt/d/freq/1-00007-of-00024_frequences
+Thread 10 start /mnt/d/freq/1-00008-of-00024_frequences
+Thread 11 start /mnt/d/freq/1-00009-of-00024_frequences
+Thread 12 start /mnt/d/freq/1-00010-of-00024_frequences
+Thread 17 start /mnt/d/freq/1-00015-of-00024_frequences
+Thread 15 start /mnt/d/freq/1-00013-of-00024_frequences
+Thread 2 finish /mnt/d/freq/1-00001-of-00024_frequences
+Thread 16 start /mnt/d/freq/1-00014-of-00024_frequences
+/mnt/d/freq_word_list_eng_noun/1-00019-of-00024_frequencies
+Thread 13 start /mnt/d/freq/1-00011-of-00024_frequences
+Thread 19 start /mnt/d/freq/1-00017-of-00024_frequences
+Thread 18 start /mnt/d/freq/1-00016-of-00024_frequences
+Thread 14 start /mnt/d/freq/1-00012-of-00024_frequences
+Thread 20 start /mnt/d/freq/1-00018-of-00024_frequences
+Thread 5 finish /mnt/d/freq/1-00003-of-00024_frequences
+Thread 4 finish /mnt/d/freq/1-00002-of-00024_frequences
+/mnt/d/freq_word_list_eng_noun/1-00020-of-00024_frequencies
+Thread 6 finish /mnt/d/freq/1-00004-of-00024_frequences
+/mnt/d/freq_word_list_eng_noun/1-00021-of-00024_frequencies
+Thread 7 finish /mnt/d/freq/1-00005-of-00024_frequences
+/mnt/d/freq_word_list_eng_noun/1-00022-of-00024_frequencies
+Thread 2 start /mnt/d/freq/1-00019-of-00024_frequences
+/mnt/d/freq_word_list_eng_noun/1-00023-of-00024_frequencies
+Thread 5 start /mnt/d/freq/1-00020-of-00024_frequences
+Thread 4 start /mnt/d/freq/1-00021-of-00024_frequences
+Thread 6 start /mnt/d/freq/1-00022-of-00024_frequences
+Thread 7 start /mnt/d/freq/1-00023-of-00024_frequences
+Thread 3 finish /mnt/d/freq/1-00000-of-00024_frequences
+Thread 8 finish /mnt/d/freq/1-00006-of-00024_frequences
+Thread 4 finish /mnt/d/freq/1-00021-of-00024_frequences
+Thread 11 finish /mnt/d/freq/1-00009-of-00024_frequences
+Thread 14 finish /mnt/d/freq/1-00012-of-00024_frequences
+Thread 17 finish /mnt/d/freq/1-00015-of-00024_frequences
+Thread 20 finish /mnt/d/freq/1-00018-of-00024_frequences
+Thread 2 finish /mnt/d/freq/1-00019-of-00024_frequences
+Thread 9 finish /mnt/d/freq/1-00007-of-00024_frequences
+Thread 19 finish /mnt/d/freq/1-00017-of-00024_frequences
+Thread 15 finish /mnt/d/freq/1-00013-of-00024_frequences
+Thread 12 finish /mnt/d/freq/1-00010-of-00024_frequences
+Thread 10 finish /mnt/d/freq/1-00008-of-00024_frequences
+Thread 13 finish /mnt/d/freq/1-00011-of-00024_frequences
+Thread 18 finish /mnt/d/freq/1-00016-of-00024_frequences
+Thread 16 finish /mnt/d/freq/1-00014-of-00024_frequences
+Thread 6 finish /mnt/d/freq/1-00022-of-00024_frequences
+Thread 5 finish /mnt/d/freq/1-00020-of-00024_frequences
+Thread 7 finish /mnt/d/freq/1-00023-of-00024_frequences
+Time taken : 4 minutes

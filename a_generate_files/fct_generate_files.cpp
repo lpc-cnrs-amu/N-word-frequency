@@ -149,12 +149,12 @@ void write_in_file(FILE* output, string& ngram, unsigned& somme_year,
  * \param token Is empty if the .gz file has been entirely read
  * \return False if the file has been entirely read, else true
  */
-bool file_not_entirely_read(stringstream& token)
+bool file_not_entirely_read(stringstream& token, string large_filename)
 {
 	string buff;
 	bool not_empty = static_cast<bool>(token >> buff);
 	if(not_empty)
-		print_message("WARNING didn't read the entire file, has left : ", buff);
+		print_message("WARNING didn't read the entire file ", large_filename);
 	return not_empty;
 }		
 
@@ -233,7 +233,7 @@ void treat_file(int thread_id, gzFile large_file, FILE* output, string large_fil
 	}
 	// last line
 	//pour tester s'il y a bien un saut de ligne a la fin
-	file_not_entirely_read(token);
+	file_not_entirely_read(token, large_filename);
 	/*
 	if( !file_not_entirely_read(token) && valid_line(token.str(), ngram, year, nb_match, 
 		nb_volume, forbidden_characters, accepted_tags, 

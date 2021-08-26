@@ -204,4 +204,4 @@ The `> log_d_calcul_frequences_tag_grams.txt` part is used to write what the pro
 Known issues
 -------------------------------
 
-- "à l'infanterie" is OCR and part-of-speech tagged either as "à" "l'" "infanterie" OR "à" "l" "'" "infanterie" where "'" is associated or not with "l" (standing for THE in English
+- "à l'infanterie" is OCR and part-of-speech tagged either as "à" "l'" "infanterie" OR "à" "l" "'" "infanterie" where "'" is associated or not with "l" (standing for "THE" in English). This means that "'" is more than often tagged in French as a standalone gram, which should not be. "L'" is a short for "Le" or "La" (determiners).

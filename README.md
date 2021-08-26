@@ -199,3 +199,9 @@ END
 
 Then run `d_calcul_frequences_tag_grams/./calcul_frequences_tag_grams_thread config.ini > log_d_calcul_frequences_tag_grams.txt` to use the multithreading version, or `d_calcul_frequences_tag_grams/./calcul_frequences_tag_grams config.ini > log_d_calcul_frequences_tag_grams.txt` to use the non-multithreading version. 
 The `> log_d_calcul_frequences_tag_grams.txt` part is used to write what the program do in the file log_d_calcul_frequences_tag_grams.txt (if the file doesn't exist, it will be created) in addition to writing into the terminal. Of course you can named this file how you want. 
+
+-------------------------------
+Known issues
+-------------------------------
+
+- "à l'infanterie" is OCR and part-of-speech tagged either as "à" "l'" "infanterie" OR "à" "l" "'" "infanterie" where "'" is associated or not with "l" (standing for THE in English

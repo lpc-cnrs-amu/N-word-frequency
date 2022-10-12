@@ -66,10 +66,69 @@ bool valid_ngram(string ngram, vector<string>& forbidden_characters,
 		tag = words_tags[i];
 		if( std::find(accepted_tags.begin(), accepted_tags.end(), tag) == accepted_tags.end() )
 			return false;
-
 	}
 	
 	return true;		
+}
+
+void calcul_occ(unsigned& year, unsigned long long& nb_match, 
+	unsigned long long& nb_volume, unsigned min_year_defined, string& line, 
+	unsigned& year_max, unsigned& year_min, 
+	unsigned long long& mean_pondere_match, unsigned long long& mean_pondere_volume,
+	unsigned long long& match_max, unsigned long long& match_min, 
+	unsigned long long& volume_max, unsigned long long& volume_min)
+{
+	string token;
+	string delimiter = ",";
+	unsigned position = 0;
+	size_t pos = 0;
+	unsigned long long match, vol;
+	unsigned this_year;
+	
+
+	if( std::count(line.begin(), line.end(), ',') != 2 )
+		return;
+	
+	// cut by ,
+	while ((pos = line.find(delimiter)) != std::string::npos) 
+	{
+		++ position;
+		token = line.substr(0, pos);
+		line.erase(0, pos + delimiter.length());
+		
+		// year
+		if(position == 1)
+		{
+			this_year = stoul(token);
+			if(this_year < min_year_defined)
+				return;
+		}
+		// match occurrences
+		else if(position == 2)
+			match = stoull( token );
+	}
+	// volume occurrences
+	if(position == 2 && line != "")
+	{
+		if( this_year > year_max )
+			year_max = this_year;
+		if( this_year < year_min )
+			year_min = this_year;
+		++ year;
+		nb_match += match;
+		if( match > match_max )
+			match_max = match;
+		if( match < match_min )
+			match_min = match;
+		vol = stoull( line );
+		nb_volume += vol;
+		if( vol > volume_max )
+			volume_max = vol;
+		if( vol < volume_min )
+			volume_min = vol;
+		mean_pondere_match = mean_pondere_match + this_year * match;
+		mean_pondere_volume = mean_pondere_volume + this_year * vol;
+	}
 }
 
 /*! \brief Says if a line is valid or not. Fills all the elements (ngram, year, occurrence, volume).
@@ -77,7 +136,6 @@ bool valid_ngram(string ngram, vector<string>& forbidden_characters,
  * A line is valid if : 
  * - The ngram is valid : all words are correctly tagged and all words are correct, and there is n words.
  * - The year is valid : it is superior or equal than the min year you defined
- * - There is 4 elements : the ngram, the year, the occurrence, the number of volume
  * 
  * \param line The line to treat, ex : 
  * \param ngram The ngram to fill
@@ -91,16 +149,31 @@ bool valid_ngram(string ngram, vector<string>& forbidden_characters,
  * \return True if the line is valid, else false.
  */
 bool valid_line(string line, string& ngram, 
-	unsigned long long& year, unsigned long long& nb_match, unsigned long long& nb_volume, 
+	unsigned& year, unsigned long long& nb_match, unsigned long long& nb_volume, 
 	vector<string>& forbidden_characters, 
 	vector<string>& accepted_tags, 
 	unsigned nb_ngram, unsigned min_year_defined,
-	regex& regex_numeric, bool no_number)
+	regex& regex_numeric, bool no_number, unsigned& year_max, unsigned& year_min, 
+	unsigned long long& mean_pondere_match, unsigned long long& mean_pondere_volume,
+	unsigned long long& match_max, unsigned long long& match_min, 
+	unsigned long long& volume_max, unsigned long long& volume_min)
 {
 	string token;
 	string delimiter = "\t";
 	unsigned position = 0;
 	size_t pos = 0;
+	
+	year = 0;
+	nb_match = 0;
+	nb_volume = 0;
+	mean_pondere_match = 0;
+	mean_pondere_volume = 0; 
+	year_max = 0;
+	year_min = 3000;
+	match_max = 0;
+	match_min = ULLONG_MAX;
+	volume_max = 0;
+	volume_min = ULLONG_MAX;
 	
 	// cut by \t
 	while ((pos = line.find(delimiter)) != std::string::npos) 
@@ -116,21 +189,16 @@ bool valid_line(string line, string& ngram,
 				return false;
 			ngram = token;
 		}
-		//year
-		else if(position == 2)
-		{
-			year = stoull( token );
-			if(year < min_year_defined)
-				return false;
-		}
-		else if(position == 3)
-			nb_match = stoull( token );
+		else
+			calcul_occ(year, nb_match, nb_volume, min_year_defined, token, 
+				year_max, year_min, mean_pondere_match, mean_pondere_volume,
+				match_max, match_min, volume_max, volume_min);
 	}
 	if(line != "")
 	{
-		++ position;
-		nb_volume = stoull( line );
+		calcul_occ(year, nb_match, nb_volume, min_year_defined, line, 
+			year_max, year_min, mean_pondere_match, mean_pondere_volume,
+			match_max, match_min, volume_max, volume_min);
 	}
-	
-	return position==4;
+	return year > 0;
 }

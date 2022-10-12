@@ -213,24 +213,19 @@ bool get_total_volume(const char* filename,
 	
 	file.get(tab); // read the first space
 	file.get(tab);
-	while( tab == '\t'  )
+	file.get(tab);
+	while( file >> year  )
 	{
-		if (file >> year)
-		{
-			file.get(tab);
-			file >> nb_1gram;
-			file.get(tab);
-			file >> nb_pages;
-			file.get(tab);
-			file >> nb_volumes;
-			if( year >= min_year_defined )
-				total_volume += nb_volumes;
-			file.get(tab);
-		}
-		else
-			tab = ' ';
+		file.get(tab);
+		file >> nb_1gram;
+		file.get(tab);
+		file >> nb_pages;
+		file.get(tab);
+		file >> nb_volumes;
+		if( year >= min_year_defined )
+			total_volume += nb_volumes;
+		file.get(tab);
 	}
-	
 	file.close();	
 	return true;	
 }

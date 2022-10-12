@@ -118,12 +118,11 @@ void explode_ngram(string& precedent_ngram, vector<string>& words,
 	}
 }
 
-
 void write_in_file(FILE* output, string& ngram, unsigned& somme_year,
 	unsigned long long& somme_nb_match, unsigned long long& somme_nb_volume, 
-	unsigned long long& mean_pondere_match,
-	unsigned long long& mean_pondere_volume, unsigned& year_max, unsigned& year_min,
-	unsigned long long& nb_match_max,	unsigned long long& nb_match_min, unsigned long long& nb_volume_max,
+	unsigned long long& mean_pondere_match, unsigned long long& mean_pondere_volume, 
+	unsigned& year_max, unsigned& year_min, unsigned long long& nb_match_max, 
+	unsigned long long& nb_match_min, unsigned long long& nb_volume_max,
 	unsigned long long& nb_volume_min)
 {
 	unsigned i;
@@ -144,92 +143,18 @@ void write_in_file(FILE* output, string& ngram, unsigned& somme_year,
 		nb_volume_max, nb_volume_min);	
 }
 
-/*! \brief Update each elements of the output file.
- * 
- * \param output The output file 
- * \param ngram The actual ngram read
- * \param precedent_ngram The precedent ngram read
- * \param somme_year Number of year where the ngram appear (from min year to 2009)
- * \param somme_nb_match Sum of occurrences through the years (from min year to 2009)
- * \param somme_nb_volume Sum of volumes through the years (from min year to 2009)
- * \param mean_pondere_match Mean year ponderated by somme_nb_match
- * \param mean_pondere_volume Mean year ponderated by somme_nb_volume
- * \param year_max The last year where the ngram appears (most recent year)
- * \param year_min The first year where the ngram appears (limited to min year)
- * \param nb_match_max 
- * \param nb_match_min
- * \param nb_volume_max
- * \param nb_volume_min
- * \param year
- * \param nb_match
- * \param nb_volume
- */
-void treat_line(FILE* output, string& ngram, string& precedent_ngram, unsigned& somme_year,
-	unsigned long long& somme_nb_match, unsigned long long& somme_nb_volume, 
-	unsigned long long& mean_pondere_match,
-	unsigned long long& mean_pondere_volume, unsigned& year_max, unsigned& year_min,
-	unsigned long long& nb_match_max,	unsigned long long& nb_match_min, unsigned long long& nb_volume_max,
-	unsigned long long& nb_volume_min, unsigned long long year, unsigned long long nb_match, 
-	unsigned long long nb_volume)
-{	
-	// find a new ngram so we write the precedent (except for the 1st line of the file)
-	if( ngram != precedent_ngram && precedent_ngram != "" )
-	{	
-		write_in_file(output, precedent_ngram, somme_year,
-			somme_nb_match, somme_nb_volume, 
-			mean_pondere_match, mean_pondere_volume, year_max, year_min,
-			nb_match_max, nb_match_min, nb_volume_max,
-			nb_volume_min);
-			
-		somme_year = 1;
-		somme_nb_match = nb_match;
-		somme_nb_volume = nb_volume;
-		mean_pondere_match = year * nb_match;
-		mean_pondere_volume = year * nb_volume; 
-		year_max = year;
-		year_min = year;
-		nb_match_max = nb_match;
-		nb_match_min = nb_match;
-		nb_volume_max = nb_volume;
-		nb_volume_min = nb_volume;					
-	}
-	// find the same ngram as the precedent
-	else
-	{
-		++ somme_year;
-		somme_nb_match += nb_match;
-		somme_nb_volume += nb_volume;
-		mean_pondere_match = mean_pondere_match + year * nb_match;
-		mean_pondere_volume = mean_pondere_volume + year * nb_volume;
-		if( year > year_max )
-			year_max = year;
-		if( year < year_min )
-			year_min = year;
-
-		if( nb_match > nb_match_max )
-			nb_match_max = nb_match;
-		if( nb_match < nb_match_min )
-			nb_match_min = nb_match;
-			
-		if( nb_volume > nb_volume_max )
-			nb_volume_max = nb_volume;
-		if( nb_volume < nb_volume_min )
-			nb_volume_min = nb_volume;
-	}
-}
-
 
 /*! \brief Says if the .gz file has been entirely read or not.
  * 
  * \param token Is empty if the .gz file has been entirely read
  * \return False if the file has been entirely read, else true
  */
-bool file_not_entirely_read(stringstream& token)
+bool file_not_entirely_read(stringstream& token, string large_filename)
 {
 	string buff;
 	bool not_empty = static_cast<bool>(token >> buff);
 	if(not_empty)
-		print_message("WARNING didn't read the entire file, has left : ", buff);
+		print_message("WARNING didn't read the entire file ", large_filename);
 	return not_empty;
 }		
 
@@ -237,30 +162,22 @@ void treat_file(int thread_id, gzFile large_file, FILE* output, string large_fil
 	vector<string>& forbidden_characters, vector<string>& accepted_tags, 
 	unsigned nb_ngrams, unsigned min_year_defined, bool no_number)
 {
-	// to treat the lines
-	//std::regex regex_numeric("^([-+]?[0-9]+)([,.]?[0-9]*([eE]{1}[-+]?[0-9]*)?)$");
+	int err;
 	std::regex regex_numeric("[0-9]+");
 	unsigned char buffer[CHUNK_SIZE];
 	unsigned int unzipped_bytes = 1;
 	string ngram;
-	string precedent_ngram = "";
 	stringstream token("");
-	unsigned long long year, nb_match, nb_volume;
-	int err;
-	
-	// for the operations on the lines
-	unsigned somme_year = 0;
-	unsigned long long somme_nb_match = 0;
-	unsigned long long somme_nb_volume = 0;
+	unsigned year;
+	unsigned long long nb_match, nb_volume;
 	unsigned long long mean_pondere_match = 0;
 	unsigned long long mean_pondere_volume = 0; 
 	unsigned year_max = 0;
 	unsigned year_min = 3000;
-	unsigned long long nb_match_max = 0;
-	unsigned long long nb_match_min = ULLONG_MAX;
-	unsigned long long nb_volume_max = 0;
-	unsigned long long nb_volume_min = ULLONG_MAX;
-	bool one_valid_line = false;
+	unsigned long long match_max = 0;
+	unsigned long long match_min = ULLONG_MAX;
+	unsigned long long volume_max = 0;
+	unsigned long long volume_min = ULLONG_MAX;
 							
 	while(1)
 	{
@@ -300,28 +217,34 @@ void treat_file(int thread_id, gzFile large_file, FILE* output, string large_fil
 			{
 				if( valid_line(token.str(), ngram, year, nb_match, 
 					nb_volume, forbidden_characters, accepted_tags, 
-					nb_ngrams, min_year_defined, regex_numeric, no_number) )
+					nb_ngrams, min_year_defined, regex_numeric, no_number,
+					year_max, year_min, mean_pondere_match, mean_pondere_volume,
+					match_max, match_min, volume_max, volume_min) )
 				{
-					one_valid_line = true;
-					treat_line(output, ngram, precedent_ngram, somme_year,
-						somme_nb_match, somme_nb_volume, mean_pondere_match,
+					write_in_file(output, ngram, year,
+						nb_match, nb_volume, mean_pondere_match, 
 						mean_pondere_volume, year_max, year_min,
-						nb_match_max, nb_match_min, nb_volume_max,
-						nb_volume_min, year, nb_match, nb_volume);
-					precedent_ngram = ngram;
+						match_max, match_min, volume_max, volume_min);
 				}
 				token.str(std::string());
 				token.clear();
 			}
 		}
 	}
-	// write the last treated line
-	if( one_valid_line && !file_not_entirely_read(token) )
+	// last line
+	//pour tester s'il y a bien un saut de ligne a la fin
+	file_not_entirely_read(token, large_filename);
+	/*
+	if( !file_not_entirely_read(token) && valid_line(token.str(), ngram, year, nb_match, 
+		nb_volume, forbidden_characters, accepted_tags, 
+		nb_ngrams, min_year_defined, regex_numeric, no_number,
+		year_max, year_min, mean_pondere_match, mean_pondere_volume,
+		match_max, match_min, volume_max, volume_min) )
 	{
-		write_in_file(output, ngram, somme_year,
-			somme_nb_match, somme_nb_volume, 
-			mean_pondere_match, mean_pondere_volume, year_max, year_min,
-			nb_match_max, nb_match_min, nb_volume_max,
-			nb_volume_min);
+		write_in_file(output, ngram, year,
+			nb_match, nb_volume, mean_pondere_match, 
+			mean_pondere_volume, year_max, year_min,
+			match_max, match_min, volume_max, volume_min);
 	}
+	*/
 }

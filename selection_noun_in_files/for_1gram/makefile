@@ -17,8 +17,8 @@ Tokeniseur.o: Tokeniseur.cpp Tokeniseur.hpp Node.hpp
 Node.o: Node.cpp Node.hpp
 	$(CC) -o Node.o -c Node.cpp $(CFLAGS)
 	
-util.o: ../util/util.cpp ../util/util.hpp ../util/QueueSafe.hpp
-	$(CC) -o util.o -c ../util/util.cpp $(CFLAGS)
+util.o: ../../util/util.cpp ../../util/util.hpp ../../util/QueueSafe.hpp
+	$(CC) -o util.o -c ../../util/util.cpp $(CFLAGS)
 	
 clean:
 	rm -rf *.o
